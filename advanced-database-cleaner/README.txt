@@ -5,7 +5,7 @@ Tags: clean, clean up, cleanup, database, optimize, performance, speed, optimizi
 Requires at least: 3.1.0
 Requires PHP: 5.0
 Tested up to: 6.4
-Stable tag: 3.1.3
+Stable tag: 3.1.4
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -140,8 +140,14 @@ This section describes how to install the plugin. In general, there are 3 ways t
 
 == Changelog ==
 
+= 3.1.4 - 23/01/2024 =
+- Security: enhancing the security by avoiding deserialization (thanks to Richard Telleng from Wordfence)
+- PRO: fix endless scan reloading
+- PRO: fix PHP warning: Implicit conversion from float to int
+- PRO: some code cleanup
+
 = 3.1.3 - 12/09/2023 =
-- Security: enhanced the security by sanitizing some parameters
+- Security: enhancing the security by sanitizing some parameters
 - Fix: fixed 'Constant FILTER_SANITIZE_STRING is deprecated in PHP 8'
 - Fix: fixed 'Undefined property : stdClass::$data_free'
 - Fix: fixed 'PHP Fatal error:  Uncaught TypeError: date(): Argument #2 ($timestamp) must be of type ?int'
