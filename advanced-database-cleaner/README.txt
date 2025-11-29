@@ -1,11 +1,11 @@
-=== Advanced Database Cleaner ===
+=== Advanced Database Cleaner – Optimize & Clean database to Speed Up Site Performance ===
 Contributors: symptote
 Donate Link: https://www.sigmaplugin.com/donation
 Tags: clean, database, optimize, performance, postmeta
-Requires at least: 3.1.0
-Requires PHP: 5.0
-Tested up to: 6.8
-Stable tag: 3.1.7
+Requires at least: 5.0.0
+Requires PHP: 7.0
+Tested up to: 6.8.3
+Stable tag: 4.0.0
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -13,82 +13,179 @@ Clean database by deleting orphaned data such as 'revisions', 'expired transient
 
 == Description ==
 
-Clean up database by deleting orphaned items such as 'old revisions', 'spam comments', optimize database and more...
+Advanced Database Cleaner is a complete WordPress optimization plugin that helps you clean up database clutter and optimize database performance by removing unused data such as old revisions, auto drafts, spam comments, expired transients, unused post meta, duplicated post meta, unused user meta, etc. 
 
-If you have been using WordPress for a while, then you should think absolutely about a database cleanup. Indeed, your database may be full of garbage that makes your site sluggish and bloated such as old revisions, orphaned post meta, spam comments, etc. You should clean-up this unnecessary data to reduce your database size and improve website speed and performance. In addition, you will have quicker database backup since the file of your backup will be smaller.
+It is designed to help you improve website speed by reducing database bloat and ensuring a lean, efficient WordPress installation. It also provides detailed previews, powerful filters, and automation tools to safely control what gets cleaned. 
 
-'Advanced Database Cleaner' is a must-have plugin that allows you to clean database, optimize database and more.
+With the ✨[**Premium version**](https://sigmaplugin.com/downloads/wordpress-advanced-database-cleaner/?utm_source=wprepo&utm_medium=readme&utm_campaign=wordpress&utm_content=landing_page)✨, you can unlock even more advanced features, such as detecting and cleaning orphaned options, orphaned tables, orphaned post meta, orphaned user meta, orphaned transients, and orphaned cron jobs. It also gives you clear insights into how your database evolves over time through built-in analytics, lets you monitor plugin and theme activity to better understand when new data is created or when leftovers appear, and much more.
 
-= Main Features =
+### Why use Advanced Database Cleaner❓
 
+👉 **Get a clear overview**: see how many tables, options, transients, cron jobs, metadata... records you have, and identify which are unused or orphaned.
+
+👉 **Save time**: configure what to clean, how far back to keep data, and how often to run automations. The plugin will then handle recurring cleanups for you.
+
+👉 **Save space and improve performance**: removing unnecessary data reduces database size, makes backups faster, and can improve query performance, especially on busy or older sites.
+
+#### ✅ Main Features
 * Delete old revisions of posts and pages
-* Delete old auto drafts
-* Delete trash posts
+* Delete old auto-drafts
+* Delete trashed posts
 * Delete pending comments
 * Delete spam comments
-* Delete trash comments
+* Delete trashed comments
 * Delete pingbacks
 * Delete trackbacks
-* Delete orphan post metadata
-* Delete orphan comment metadata
-* Delete orphan user metadata
-* Delete orphan term metadata
-* Delete orphan relationships
+* Delete unused post meta
+* Delete unused comment meta
+* Delete unused user meta
+* Delete unused term meta
+* Delete unused relationships
 * Delete expired transients
-* Display and view orphaned information before making a database clean-up so you can be sure about what you are going to clean-up
-* Search & filter all items based on their names or values
-* Keep last x days' data from being cleaned: clean only data older than the number of days you have specified
-* Schedule database clean up to run automatically
-* Create as many scheduled cleanup tasks as you need and specify what items should be cleaned by the scheduled task
-* Scheduled tasks can be executed based on several frequencies: Once, hourly, twice a day, daily, weekly or monthly
-* Display database tables information such as the number of rows, table size, etc.
-* Optimize database tables (The plugin will notify you if any tables require optimization)
-* Repair corrupted database tables or damaged ones (The plugin will notify you if any tables are corrupted or damaged)
-* Schedule database optimization and/or reparation to run automatically and specify what tables should be optimized and/or repaired
-* Empty database tables rows
+* Delete duplicated post meta
+* Delete duplicated user meta
+* Delete duplicated comment meta
+* Delete duplicated term meta
+* Delete oEmbed caches
+* Display the database size that will be freed before cleaning for each item type, and the total size to be freed
+* Display and preview items to clean before performing a database cleanup to ensure safety
+* Sorting capability in cleanup preview tables (by name, date, size, site id, etc.)
+* View options value content in original or formatted mode for serialized or JSON structures (and other items types as well).
+* Keep last X days of data: clean only data older than the number of days you specify
+
+#### ✅ Automation
+* Schedule database cleanup to run automatically
+* Create scheduled cleanup tasks and specify which items each task should clean
+* Schedule database optimization and/or repair to run automatically
+* Execute scheduled tasks based on several frequencies: once, hourly, twice a day, daily, weekly, or monthly
+* Specify the "keep last X days" rule for each item type in a scheduled task
+* Pause/Resume scheduled tasks whenever needed
+* Create as many scheduled cleanup tasks as needed and specify what each task should clean
+
+#### ✅ Tables
+* Display the list of database tables with information such as number of rows, table size, engine, etc.
+* Sort tables by any column such as table name or table size
+* Detect and filter tables with invalid prefixes (tables that do not belong to the current WordPress installation), this can be enabled or disabled from the settings page
+* Optimize database tables (the plugin notifies you when tables require optimization)
+* Repair corrupted or damaged database tables (the plugin notifies you when tables are corrupted)
+* Empty rows of database tables
 * Clean and delete database tables
-* Display options list
-* Display options information such as option name, option value, option size, option autoload
+
+#### ✅ Options
+* Display the options list with information such as option name, option value, option size, and autoload status
+* Sort options by any column such as option name or option size
+* View option value content in original or formatted mode for serialized or JSON structures.
+* Notify you if autoloaded options are large and help reduce autoload size for better performance
+* Detect large options that may slow down your website
+* Set option autoload to yes/no
 * Clean and delete options
-* Set options autoload to no / yes
-* Display active cron tasks list (scheduled tasks) with their information such as arguments, next run, etc.
+
+#### ✅ Cron Jobs
+* Display the list of active cron jobs (scheduled tasks) with information such as arguments, action, next run, schedule, etc.
+* Sort cron jobs by any column such as action name or next run time
+* Detect cron jobs with no valid actions
 * Clean and delete scheduled tasks
-* User-friendly and simple to use
 
-= Multisite Support =
+#### ✅ Post Meta
+* Display the post meta list with information such as meta key, value, size, associated post ID, etc.
+* Sort post meta by any column such as meta key, meta size, or post ID
+* View post meta value content in original or formatted mode for serialized or JSON structures.
+* Detect unused post meta (meta not associated with any existing posts)
+* Detect duplicated post meta (same meta key/value for the same post ID)
+* Clean and delete post meta
 
-* The plugin is compatible with Multisite installations
-* Only the main site can view, clean and optimize the whole network. Other sites in the network cannot perform these tasks. We have opted for this philosophy because we are sure that your DB is precious and only the super administrator can perform such actions
-* You can clean up all sites from one place (the main site). You can also specify specific sites you want to cleanup
+#### ✅ User Meta
+* Display the user meta list with information such as meta key, value, size, associated user ID, etc.
+* Sort user meta by any column such as meta key, meta size, or user ID
+* View user meta value content in original or formatted mode for serialized or JSON structures.
+* Detect unused user meta (meta not associated with any existing users)
+* Detect duplicated user meta (same meta key/value for the same user ID)
+* Clean and delete user meta
 
-= By using the ADC plugin, you will =
+#### ✅ Transients
+* Display the list of transients with information such as name, value, size, and expiration time
+* Sort transients by any column such as transient name, size, or expiration time
+* View transient value content in original or formatted mode for serialized or JSON structures.
+* Clean expired transients
+* Detect large transients that may slow down your website
+* Clean and delete transients
+* Set transient autoload to yes/no
 
-* <strong>Get an overview:</strong> The plugin will help you get an overview of what is happening in your database. It will report all unused/orphaned items that should be cleaned, it will give you the number of tables/options/tasks you have, etc. This way, you can control your database if anything goes wrong
+#### ✅ Other Tools
+* Display current database size
+* Logging system for easy troubleshooting
+* Access the WordPress debug log directly from the plugin interface
+* Multisite support (network-wide database cleanup and optimization from the main site)
+* Modern, responsive interface powered by React for a smooth experience without page reloads
+* Show/hide plugin tabs for better usability
 
-* <strong>Save time:</strong> You can specify what items should be cleaned/optimized/repaired, what is the number of days' data to keep and the cleanup/optimization/reparation frequency. The plugin will then automate the process to run automatically based on your settings
+#### ⚡ Premium Features ⚡ [**Official website**](https://sigmaplugin.com/downloads/wordpress-advanced-database-cleaner/?utm_source=wprepo&utm_medium=readme&utm_campaign=wordpress&utm_content=landing_page)
 
-* <strong>Save space:</strong> By deleting unused/orphaned items, you will save space in your database and make quicker backups since the file of your backup will be smaller
+Unlock the full power of database cleanup and optimization with Advanced Database Cleaner Premium - packed with smart features that take accuracy, speed, and cleanup control to the next level.
 
-= Pro Features (<a href="https://sigmaplugin.com/downloads/wordpress-advanced-database-cleaner">Official website</a>) =
-Do you know that even after deleting a plugin/theme from your WordPress website, some of its leftovers may remain in your database? Such as orphan options, orphan tables, and orphan cron tasks. As you may know, not all plugins/themes care about the housekeeping of your WordPress database. As long as you are removing plugins/themes, leftovers will be accumulated in your database and will influence your website performance. The Pro version of Advanced Database Cleaner will help you remove all those leftovers and perform a deep database clean up. In the pro version you can:
+#### ✅ Remote SmartScan
+* Local scan + Remote SmartScan technology to accurately detect the true owners of tables, options, post meta, user meta, transients, and cron jobs
+* Cloud-enhanced ownership detection using a large and continuously improving remote database
+* Improved accuracy for identifying orphaned items left by deleted plugins and themes
+* Ability to edit ownership of any item and correct misidentified owners
+* Ability to send ownership corrections to improve the global detection database
+* Enhanced "Belongs to" ownership column everywhere using cloud data + local data
+* Display multiple possible owners for each item when applicable
+* Display owner status (active, inactive, not installed) to simplify cleanup decisions
+* Check your remote scan credits to monitor usage
 
-* Classify options according to their "creator". They can be either: plugins options, themes options or WP core options
-* Detect and delete orphan options. Your 'wp_options' table may be full of orphaned options and therefore can impact the performance of loading data from it, which may lead to a slow website. Clean up orphaned options is then important
-* Classify tables according to their "creator". They can be either: plugins tables, themes tables or WP core tables
-* Detect and delete orphan tables. As for options, you may also have some orphaned tables that were created by plugins/themes you are not using anymore. Clean up orphaned tables will decrease the size of your database
-* Classify all cron tasks (cron jobs) according to their "creator". They can be either: plugins cron tasks, themes cron tasks or WP core tasks
-* Detect and delete orphan cron jobs. After you uninstall a plugin/theme, some of its cron tasks may still be active making WordPress calling unknown functions. using the pro version, you can detect and clean orphaned tasks
-* Search & filter options, filter tables and filter cron tasks based on several criteria such as the "name", "creator", "value", etc.
-* Get premium support: we will provide quick support as well as any technical answers to help you clean up your database efficiently
+#### ✅ Action Scheduler Cleanup
+* Clean Action Scheduler Completed actions
+* Clean Action Scheduler Failed actions
+* Clean Action Scheduler Canceled actions
+* Clean Action Scheduler Completed logs
+* Clean Action Scheduler Failed logs
+* Clean Action Scheduler Canceled logs
+* Clean Action Scheduler Orphan logs
 
-= Translations =
+#### ✅ General Cleanup Enhancements
+* Keep last X items feature in General Cleanup
+* Keep last X items per parent (e.g., per post)
+* Keep last X items globally (e.g., keep the last 10 pingbacks)
+* Combine Keep Last X Days with Keep Last X Items for advanced cleanup safety
 
-You are welcome to contribute to the plugin translation via the [WordPress translation website](https://translate.wordpress.org/projects/wp-plugins/advanced-database-cleaner).
+#### ✅ Advanced Filters
+* Advanced filters in all modules (Tables, Options, Post Meta, User Meta, Transients, Cron Jobs)
+* Filter by size, value content, autoload, expiration, metadata type, and more
+* Filter by plugin owner, theme owner, WordPress core, orphan, or unknown
+* Filter by multisite site ID with full per-site visibility
+* Filter by action frequency and interval in cron jobs
+* Filter by duplicated, unused, large, not-yet-scanned, or expired items
 
-= Thanks To =
+#### ✅ Advanced Automation
+* Unlimited automation tasks (Free version is limited to 5 tasks)
+* Create any number of scheduled cleanup tasks with different configurations
+* Create scheduled optimization and repair tasks
+* Use Keep Last X Items and Keep Last X Days inside scheduled tasks
+* Run automation tasks hourly, twice daily, daily, weekly, monthly, or at any supported frequency
+* Pause/resume/delete automation tasks without losing settings
+* Per-task automation event logging showing executed actions, number of items cleaned, execution timestamps, and detailed logs
 
-* [Fabio Fava](https://profiles.wordpress.org/fabiofava) for translating the plugin to pt_BR
-* [Julio Potier](https://profiles.wordpress.org/juliobox) for the security remarks
+#### ✅ Database Analytics
+* Daily tracking of total database size and number of tables
+* Daily and monthly charts showing database growth trends
+* Raw data tab with all recorded measurements
+* Table-level analytics showing size growth, rows growth, and daily changes
+* Ability to detect abnormal table growth caused by logs, caches, or runaway actions
+* Multi-table selection and search for analyzing multiple tables at once
+
+#### ✅ Addons Activity
+* Automatically track plugin activations, deactivations, and uninstalls
+* Automatically track theme switches and uninstalls
+* Display activity in a color-coded timeline for better readability
+* All timestamps shown in your local timezone
+* Multisite support (activity recorded on the main site)
+
+#### ✅ Full Multisite Support
+* Clean any site or all sites
+* Filter items by site ID in every module (Tables, Options, Post Meta, User Meta, Transients, Cron Jobs)
+* Display which site each item belongs to
+* Run automation tasks across the entire network
 
 == Installation ==
 
@@ -96,53 +193,116 @@ This section describes how to install the plugin. In general, there are 3 ways t
 
 = 1. Via WordPress dashboard =
 
-* Click on 'Add New' in the plugins dashboard
-* Search for 'advanced-database-cleaner'
-* Click 'Install Now' button
-* Activate the plugin from the same page or from the Plugins dashboard
+* Click on "Add New" in the Plugins dashboard.
+* Search for "advanced-database-cleaner".
+* Click the "Install Now" button.
+* Activate the plugin from the same page or from the Plugins dashboard.
 
 = 2. Via uploading the plugin to WordPress dashboard =
 
-* Download the plugin to your computer from (https://wordpress.org/plugins/advanced-database-cleaner/)
-* Click on 'Add New' in the plugins dashboard
-* Click on 'Upload Plugin' button
-* Select the zip file of the plugin that you have downloaded to your computer before
-* Click 'Install Now'
-* Activate the plugin from the Plugins dashboard
+* Download the plugin to your computer from: https://wordpress.org/plugins/advanced-database-cleaner/
+* Click on "Add New" in the Plugins dashboard.
+* Click on the "Upload Plugin" button.
+* Select the zip file of the plugin that you downloaded.
+* Click "Install Now".
+* Activate the plugin from the Plugins dashboard.
 
 = 3. Via FTP =
 
-* Download the plugin to your computer from (https://wordpress.org/plugins/advanced-database-cleaner/)
-* Unzip the zip file, which will extract the 'advanced-database-cleaner-3.0.0' directory
-* Upload the 'advanced-database-cleaner' directory (included inside the extracted folder) to the /wp-content/plugins/ directory in your web space 
-* Activate the plugin from the Plugins dashboard
+* Download the plugin to your computer from: https://wordpress.org/plugins/advanced-database-cleaner/
+* Unzip the zip file, which will extract the "advanced-database-cleaner" directory.
+* Upload the "advanced-database-cleaner" directory (included inside the extracted folder) to the /wp-content/plugins/ directory in your web space.
+* Activate the plugin from the Plugins dashboard.
 
 = For Multisite installation =
 
-* Log in to your primary site and go to "My Sites" &raquo; "Network Admin" &raquo; "Plugins"
-* Install the plugin following one of the above ways
-* Network activate the plugin (Note that only the main site can have access to the plugin)
+* Log in to your primary site and go to "My Sites" » "Network Admin" » "Plugins".
+* Install the plugin following one of the above ways.
+* Network-activate the plugin. (Only the main site can access the full network-wide cleanup tools.)
 
-= Where the plugin menu will be displayed? =
+= Where is the plugin menu? =
 
-* The plugin page can be accessed via "Dashboard" &raquo; "Tools" &raquo; "WP DB Cleaner" or via the left menu "WP DB Cleaner" (You can change this via the plugin settings)
+* The plugin can be accessed via "Dashboard" » "WP DB Cleaner" or "Dashboard" » "Tools" » "WP DB Cleaner" (depending on your settings).
 
 == Screenshots ==
 
-1. Database with items to clean
-2. View items before cleaning them (case of revisions)
-3. Cleanup scheduled task
-4. Tables overview (scan of tables is available in PRO)
-5. Tables optimization/repair scheduled task
-6. Options overview (scan of options is available in PRO)
-7. Scheduled tasks overview (scan of tasks is available in PRO)
-8. Overview and settings page
+1. General Cleanup overview (list of database items to clean, total count & size)
+2. Preview items before cleaning - Revisions example (filters in Premium)
+3. Keep Last rules - Revisions example (keep last X items in Premium)
+4. Tables overview (filters & scan in Premium)
+5. Options overview (filters & scan in Premium)
+6. Post Meta overview (filters & scan in Premium)
+7. User Meta overview (filters & scan in Premium)
+8. Transients overview (filters & scan in Premium)
+9. Cron Jobs overview (filters & scan in Premium)
+10. Start Scan modal - Full scan selected (in Premium)
+11. Scan running for Options - Exact Match step (in Premium)
+12. More info about an Option ownership (in Premium)
+13. Edit an Option ownership (in Premium)
+14. Automation cleanup tasks overview
+15. Create an Automation Revisions cleanup task (keep last 2 revisions per post)
+16. Revisions cleanup Automation task events log (in Premium)
+17. Database analytics - Last 30 days daily charts (in Premium)
+18. Tables analytics - Last 30 days, actionscheduler_logs & wp_options selected (in Premium)
+19. Addons Activity - Timeline of activation, deactivation & uninstall (in Premium)
+20. Info & Logs - System Info tab selected
+21. Settings page
 
 == Changelog ==
 
-= 3.1.7 - 22/10/2025 =
-- Fix: enhanced security by adding a missing nonce (thanks to Bao – BlueRock via Wordfence)
-- Announcement: stay tuned! A completely new version will be available by the end of November 2025, featuring a brand-new design and exciting new features. The PRO version has also been significantly improved with additional functionality.
+= 4.0.0 – 28/11/2025 =
+
+Version 4.0.0 marks the biggest upgrade ever released for Advanced Database Cleaner. This major update introduces a completely redesigned interface for a smoother, faster, and more intuitive experience. It also brings powerful new features, an enhanced two-step scan engine for unmatched accuracy, and advanced security improvements that make database maintenance safer than ever. With better performance, more flexibility, and a modern UI, version 4.0.0 sets a new standard for professional WordPress database optimization.
+
+- New: Duplicated post meta cleanup type.
+- New: Duplicated user meta cleanup type.
+- New: Duplicated comment meta cleanup type.
+- New: Duplicated term meta cleanup type.
+- New: oEmbed caches cleanup type.
+- New: Estimated size to clean displayed for each cleanup type, plus a total freed-space summary before running a cleanup.
+- New: Sorting capability added to cleanup preview tables (e.g. by name, date, size, site ID).
+- New: Value viewer added to several cleanup types, displaying serialized or JSON data in raw or formatted views.
+- New: Dedicated Post Meta Management module to list, sort, inspect, and clean post meta, including detection of unused and duplicated metadata.
+- New: Dedicated User Meta Management module to list, sort, inspect, and clean user meta, including detection of unused and duplicated metadata.
+- New: Dedicated Transients Management module to inspect, sort, and clean transients, with expiration tracking, detection of large transients, and control over their autoload status.
+- New: Tables Management can now detect tables with invalid prefixes that do not belong to the current WordPress installation, with their visibility controlled from the Settings page.
+- New: Options Management now includes a formatted value viewer, detection of large options, and warnings for heavy autoloaded options to help reduce autoload size.
+- New: Cron Jobs Management now includes detection of cron jobs with no valid action/callback to help you clean them safely.
+- New: All six management modules now detect items owned by WordPress core and Advanced Database Cleaner, making it clearer where data comes from.
+- New: All six management modules now include an Attention Area that highlights priority issues, warns you about items requiring action, and helps you quickly identify and target them.
+- New: Introduced a built-in error and exception logging system, allowing logs to be copied or downloaded for support or user-side investigations.
+- New: Added tools to display the current database size, show or hide the plugin’s menu tabs, and access the WordPress debug log directly from the interface.
+- New: Modern, fully responsive interface rebuilt with React for a smoother, faster, and more intuitive user experience.
+- Enhanced: Cleaning process in the General Cleanup module now uses WordPress native deletion functions for deeper, hook-aware cleanup, with direct SQL deletion kept only as a safe fallback when required.
+- Enhanced: Automation is now centralized into a unified module with a clearer creation/edit flow and consistent use of the local timezone for all schedules.
+- Enhanced: Options, Tables, and Cron Jobs modules now display richer information with additional columns and more detailed data for each item.
+- Enhanced: System Info is now far more detailed and can be copied or downloaded, making it easier to share environment details, diagnose issues, and assist users during support.
+- Enhanced: Overall multisite support now provides clearer separation between network and site data and safer network-wide cleanup and optimization.
+- Enhanced: Backend architecture migrated to a REST API–driven system for significantly faster interactions and navigation without page reloads.
+- Enhanced: Numerous bugs and edge cases were resolved across all modules, resulting in more stable behavior and more reliable, effective cleaning operations.
+- Premium: New - Action Scheduler completed actions cleanup type.
+- Premium: New - Action Scheduler failed actions cleanup type.
+- Premium: New - Action Scheduler canceled actions cleanup type.
+- Premium: New - Action Scheduler completed logs cleanup type.
+- Premium: New - Action Scheduler failed logs cleanup type.
+- Premium: New - Action Scheduler canceled logs cleanup type.
+- Premium: New - Action Scheduler orphan logs cleanup type.
+- Premium: New - "Keep last X items" rule introduced, either per parent (e.g. keep 5 revisions per post) or globally (e.g. keep the last 10 pingbacks), in addition to the existing "keep last X days" rule.
+- Premium: New - Introduced Remote Scan system that combines the local scan with our cloud-based detection engine and continuously curated ownership database to deliver near-perfect accuracy when identifying the true owners of tables, options, post meta, user meta, transients, and cron jobs.
+- Premium: New - Added the ability to anonymously send your ownership corrections to improve our global detection database and refine ownership results for all users.
+- Premium: New - "Keep last X items" rule now configurable inside scheduled tasks, in addition to the existing "keep last X days", for more advanced and safer automated cleanups.
+- Premium: New - Introduced Database Analytics module with daily and monthly charts, raw data views, and per-table analytics (size evolution, rows evolution, daily change breakdown), including multi-table selection for comparative analysis.
+- Premium: New - Introduced Addons Activity module that automatically tracks plugin and theme activations, deactivations, uninstalls, and theme switches in a color-coded timeline using your local timezone.
+- Premium: New - Added multisite filters to the General Cleanup preview, allowing items to be filtered by site ID or site name so you can focus on a specific site in the network.
+- Premium: New - Introduced per-automation event logs showing what was cleaned, when each task ran, and how many items were processed.
+- Premium: Enhanced - Scan process fully redesigned for greater robustness and accuracy, combining an improved local scan with Remote Scan results.
+- Premium: Enhanced - Scan flow now offers clearer insights, guidance, and error handling throughout each step of the process.
+- Premium: Enhanced - "Belongs to" ownership column enriched with cloud-backed data across all management modules for more accurate owner detection.
+- Premium: Enhanced - Detailed ownership info modal added, showing all known plugins/themes related to each item.
+- Premium: Enhanced - Owner status indicators added (active, inactive, or not installed) to support deeper investigations.
+- Premium: Enhanced - Filtering capabilities expanded across all management modules with new filters by size, value content, autoload, expiration, owner type (plugin, theme, WordPress core, orphan, unknown), duplicates, unused, large, not-yet-scanned, and more, including filtering specifically by a chosen plugin or theme.
+- Premium: Enhanced - Multisite experience improved with clearer cross-site visibility, safer network-level operations, and tighter integration of ownership and analytics across all sites.
+- Premium: Enhanced - Numerous bugs and edge cases were resolved across all premium features, resulting in more stable behavior and more reliable, effective cleaning operations.
 
 = 3.1.6 - 24/03/2025 =
 - Fix: names containing HTML were not displayed correctly.
@@ -157,7 +317,7 @@ This section describes how to install the plugin. In general, there are 3 ways t
 - New: the Options tab now displays the total size of autoloaded options.
 - New: in Multisite, users can now choose to display the plugin menu in the Network Admin panel.
 - New (PRO): added support for new autoload option values in filters: on, auto, auto-on, auto-off.
-- New (PRO): users can now assign items to WordPress using the “manual categorization” feature.
+- New (PRO): users can now assign items to WordPress using the "manual categorization" feature.
 
 = 3.1.5 - 19/09/2024 =
 - Fix: Automatic conversion of false to array is deprecated
@@ -197,7 +357,7 @@ This section describes how to install the plugin. In general, there are 3 ways t
 - Tweak: deleting some useless data from "overview & settings" tab
 - Tweak: enhancing the CSS code, the plugin is responsive now and can be used in small screens
 - Tweak: enhancing some blocks of PHP code
-- New: adding “delete filter” for custom cleanup elements in “general cleanup” tab
+- New: adding "delete filter" for custom cleanup elements in "general cleanup" tab
 - Info: since we have changed a lot of CSS code, please refresh your browser cache or click "Ctrl + F5"
 - Info: great feature will be added to the next version
 
@@ -343,6 +503,9 @@ This section describes how to install the plugin. In general, there are 3 ways t
 
 == Upgrade Notice ==
 
+= 4.0.0 =
+Version 4.0.0 marks the biggest evolution of Advanced Database Cleaner since its creation. Everything has been rebuilt for speed, accuracy, and reliability. Please review the changelog for full details.
+
 = 3.0.0 =
 Known issues have been fixed in both free and pro versions (timeout error, activation, scheduled tasks...) New features have been added (new items to cleanup, filter & sort items...) Readme.txt file updated.
 
@@ -351,74 +514,86 @@ New release.
 
 == Frequently Asked Questions ==
 
-= What does mean "clean my database"? =
-As you use WordPress, your database accumulates a lot of extra data such as revisions, spam comments, trashed comments, etc. Removing this unnecessary data will reduce your database size, speeds up your backup process and speeds up your site also.
+= Why should I "clean my database"? =
+As you use WordPress, your database accumulates a large amount of unnecessary data such as revisions, spam comments, trashed comments, and more. This clutter slowly increases the size of your database, which can make your site slower and make backups take longer. Cleaning this data keeps your site lighter, faster, and easier to maintain.
 
 = Is it safe to clean my database? =
-Yes, it is. We do not run any code that can break down your site or delete your posts, pages, comments, etc. However, make sure to always back up your database before any cleanup. This is not optional; it is required! It is always better to be safe than sorry!
+Yes, it is safe. The plugin does not run any code that can break your site or delete posts, pages, or approved comments. It only removes items that WordPress considers unnecessary. However, you should always back up your database before performing any cleanup. This is required, not optional—backups ensure you can always restore your site if something unexpected happens.
 
-= What does mean "Optimize my database"? =
-Optimizing your database will reclaim unused space in your tables, which will reduce storage space and improve efficiency when accessing tables. Optimizing the database can sometimes significantly improve performance, particularly on sites that receive a lot of traffic or have a large amount of content. Optimizing your database is absolutely safe.
+= Why should I "optimize my database"? =
+Optimizing your database reclaims unused space and reorganizes the way data is stored inside your tables. Over time, tables become fragmented, especially on active websites. Optimization reduces storage usage and improves the speed at which your database responds. This process is safe and can significantly improve performance on large or busy websites.
 
 = Is it safe to clean the cron (scheduled tasks)? =
-A scheduled task enables plugins to execute some actions at specified times, without having to manually execute code at that time. Wordpress itself uses some scheduled tasks to perform some regular actions. However, some scheduled tasks may not be removed even if the responsible plugins are deleted from your WordPress installation. As you know, not all plugins care about the housekeeping of your WordPress. Hence, deleting these unnecessary tasks may help in cleaning your site. It should be noted that cleaning scheduled tasks is safe as long as you know what tasks to clean. If you are not sure, it is better to not clean any task.
+Cron jobs allow WordPress and plugins to run tasks automatically (like checking for updates or sending emails). When a plugin is removed, some of its cron jobs may remain behind. These leftover tasks serve no purpose and can slow down wp-cron events. Cleaning unnecessary cron jobs is safe as long as you know which ones should be removed. If you are unsure, it is safer not to delete any cron jobs manually.
 
-= What does mean "Revision"? What sql code is used to clean it? =
-WordPress stores a record (called "revision") of each saved draft or published update. This system allows you to see what changes were made in each post and page over time. However, this can lead to a lot of unnecessary overhead in your WordPress database, which consumes a lot of space. The sql query used by the plugin to clean all revisions is:
+= What are "revisions"? What SQL code is used to clean them? =
+WordPress stores revisions for each saved draft or update so you can review older versions. Over time, these accumulate and take up space.  
+SQL used by the plugin to delete revisions:  
 `DELETE FROM posts WHERE post_type = 'revision'`
 
-= What does mean "Auto-draft"? What sql code is used to clean it? =
-Wordpress automatically saves your post/page while you are editing it. This is called an auto-draft. If you don't hit the publish/update button, then the post/page will be saved as auto-draft and any modification to your post/page will not be visible in your public site. Over time, you could have multiple auto-drafts that you will never publish and hence you can clean them. The sql query used by the plugin to clean all auto-drafts is:
+= What are "auto drafts"? What SQL code is used to clean them? =
+WordPress automatically creates auto-drafts while you are editing posts/pages. If those drafts are never published, they remain in the database.  
+SQL used by the plugin to delete auto-drafts:  
 `DELETE FROM posts WHERE post_status = 'auto-draft'`
 
-= What does mean "Pending comment"? What sql code is used to clean it? =
-Pending comments are comments published by users and which are waiting for your approval before appearing in your site. In some cases, you will have to clean all these comments. The sql query used by the plugin to clean all pending comments is:
+= What are "pending comments"? What SQL code is used to clean them? =
+Pending comments are comments waiting for your approval. If you have many bots submitting comments, this list can grow quickly.  
+SQL used by the plugin to delete pending comments:  
 `DELETE FROM comments WHERE comment_approved = '0'`
 
-= What does mean "Spam comment"? What sql code is used to clean it? =
-It is a comment that you (or a plugin) have marked as spam. The sql query used by the plugin to clean all spam comments is:
+= What are "spam comments"? What SQL code is used to clean them? =
+Spam comments are comments flagged as spam by you or by an anti-spam plugin. They can safely be deleted.  
+SQL used by the plugin to delete spam comments:  
 `DELETE FROM comments WHERE comment_approved = 'spam'`
 
-= What does mean "Trash comment"? What sql code is used to clean it? =
-A trash comment is a comment that you have deleted from your Wordpress and have been moved to the trash. A trash comment is not visible in your site and should be deleted forever. The sql query used by the plugin to clean all trash comments is:
+= What are "trash comments"? What SQL code is used to clean them? =
+Trash comments are deleted comments moved to the trash. They are no longer visible and can be permanently removed.  
+SQL used by the plugin to delete trash comments:  
 `DELETE FROM comments WHERE comment_approved = 'trash'`
 
-= What does mean "trackback"? What sql code is used to clean it? =
-Trackbacks allows you to notify other websites owners that you have linked to their article on your website. These trackbacks can be used to send huge amounts of spam. Spammers use them to get their links posted on as many sites as possible. That is why they should be deactivated/cleaned if you do not use them. The sql query used by the plugin to clean trackbacks is:
+= What are "trackbacks"? What SQL code is used to clean them? =
+Trackbacks are a legacy system used by WordPress to allow one website to notify another that it has linked to its content. When a site receives a trackback, it appears as a type of comment on the post. Because trackbacks can be sent manually, they became heavily abused by spammers who use them to post unwanted links on websites.
+SQL used by the plugin to delete trackbacks:  
 `DELETE FROM comments WHERE comment_type = 'trackback'`
 
-= What does mean "pingback"? What sql code is used to clean it? =
-Pingbacks allow you to notify other websites owners that you have linked to their article on your website. Pingbacks were designed to solve some of the problems that people saw with trackbacks. Although there are some minor technical differences, a trackback is basically the same things as a pingback. These pingbacks can be used to send huge amounts of spam. Spammers use them to get their links posted on as many sites as possible. That is why they should be deactivated/cleaned if you do not use them. The sql query used by the plugin to clean pingbacks is:
+= What are "pingbacks"? What SQL code is used to clean them? =
+Pingbacks are an automated notification system used by WordPress. When one website publishes a link to another site’s post, WordPress sends a pingback request to the linked site. If accepted, the pingback appears as a type of comment, confirming that another site has referenced your content. Because pingbacks are automated, they are often exploited by bots to generate spam requests. 
+SQL used by the plugin to delete pingbacks:  
 `DELETE FROM comments WHERE comment_type = 'pingback'`
 
-= What does mean "Orphan post meta"? What sql code is used to clean it? =
-The post meta data is the information you provide to viewers about each post. This information usually includes the author of the post, when it was written (or posted), and how the author categorized that particular post. In some cases, some post meta data information becomes orphan and does not belong to any post. They are then called "orphan postmeta" and should be cleaned since they are not useful. The sql query used by the plugin to clean all orphan postmeta is:
+= What is "unused post meta"? What SQL code is used to clean it? =
+Post meta stores additional information for posts. When a post is deleted, some metadata may be left behind. This leftover "unused" data can grow over time.  
+SQL used by the plugin to delete unused post meta:  
 `DELETE pm FROM postmeta pm LEFT JOIN posts wp ON wp.ID = pm.post_id WHERE wp.ID IS NULL`
 
-= What does mean "Orphan comment meta"? What sql code is used to clean it? =
-The same as "Orphan post meta" with the exception that "orphan comment meta" concern comments and not posts. The sql query used by the plugin to clean all orphan comment meta is:
-`DELETE FROM commentmeta WHERE comment_id NOT IN (SELECT comment_id FROM comments)`
+= What is "unused comment meta"? What SQL code is used to clean it? =
+Comment meta stores extra information for comments. When a comment is removed, some metadata may remain in the database.  
+SQL used by the plugin to delete unused comment meta:  
+`DELETE FROM commentmeta WHERE comment_id NOT IN (SELECT comment_ID FROM comments)`
 
-= What does mean "Orphan user meta"? What sql code is used to clean it? =
-The user meta data is the information you provide to viewers about each user. This information usually includes additional data that is not stored in the users table of WordPress. In some cases, some user meta data information becomes orphaned and does not belong to any user. They are then called "orphaned usermeta" and should be cleaned since they are not useful. The sql query used by the plugin to clean all orphan comment meta is:
+= What is "unused user meta"? What SQL code is used to clean it? =
+User meta stores additional data for users. If a user is deleted, their metadata may not be removed automatically.  
+SQL used by the plugin to delete unused user meta:  
 `DELETE FROM usermeta WHERE user_id NOT IN (SELECT ID FROM users)`
 
-= What does mean "Orphan term meta"? What sql code is used to clean it? =
-The term meta data is the information that is provided for each taxonomy term. This information usually includes additional data that is not stored in the terms table of WordPress. In some cases, some term meta data information becomes orphaned and does not belong to any taxonomy term. They are then called "orphaned termmeta" and should be cleaned since they are not useful. The sql query used by the plugin to clean all orphan comment meta is:
+= What is "unused term meta"? What SQL code is used to clean it? =
+Term meta stores extra information for taxonomy terms (categories, tags, etc.). If a term is removed, its metadata may remain behind.  
+SQL used by the plugin to delete unused term meta:  
 `DELETE FROM termmeta WHERE term_id NOT IN (SELECT term_id FROM terms)`
 
-= What does mean "Orphan relationships"? What sql code is used to clean it? =
-Sometimes the wp_term_relationships table becomes bloated with many orphaned relationships. This happens particularly often if you’re using your site not as a blog but as some other type of content site where posts are deleted periodically. Over time, you could get thousands of term relationships for posts that no longer exist which consumes a lot of database space. The sql query used by the plugin to clean all orphan relationships is:
+= What are "unused relationships"? What SQL code is used to clean them? =
+The wp_term_relationships table links posts to categories/tags. When posts are deleted, related entries may remain in this table, taking unnecessary space.  
+SQL used by the plugin to delete unused relationships:  
 `DELETE FROM term_relationships WHERE term_taxonomy_id=1 AND object_id NOT IN (SELECT id FROM posts)`
 
-= What does mean "expired transient"? =
-Transients are a way of storing cached data in the WordPress DB temporarily by giving it a name and a time frame after which it will expire and be deleted. This helps improve WordPress performance and speed up your website while reducing the overall server load. Expired transients are transients that are expired and still exist in the database. These ones can be safely cleaned. Transients housekeeping is now part of WordPress core, as of version 4.9, so no need to clean up them manually unless you have specific needs.
+= What are "expired transients"? =
+Transients are temporary cached data stored by plugins or themes. When they expire, they should be removed automatically. However, some expired transients may remain in the database. These can be safely cleaned to free space.
 
 = Is this plugin compatible with multisite? =
-Yes, it is compatible with multisite. It should be noted that only the main site in the network can clean the database and orphan items of all the network. We prevent other sites to clean your DB since we believe that only the super administrator has the right to perform such operation. Your database is precious!
+Yes, the plugin is compatible with multisite. For safety, only the main site can clean the database for the entire network. Sub-sites cannot perform cleanup operations to avoid accidental damage.
 
-= Is this plugin compatible with SharDB, HyperDB or Multi-DB? =
-Actually the plugin is not supposed to be compatible with SharDB, HyperDB or Multi-DB. We will try to make it compatible in the coming releases.
+= Is this plugin compatible with SharDB, HyperDB, or Multi-DB? =
+Not yet. The plugin is not currently compatible with SharDB, HyperDB, or Multi-DB setups. Support may be added in future versions.
 
-= Does this plugin cleans itself after the uninstall? =
-We do clean-up of your WordPress site, it will be a shame if the plugin does not clean itself after an uninstall! Of course yes, the plugin cleans itself and removes any data used to store its settings once uninstalled.
+= Does this plugin clean itself after uninstall? =
+Yes. The plugin removes all of its data and settings when uninstalled. A cleanup plugin that leaves clutter would not make sense!
