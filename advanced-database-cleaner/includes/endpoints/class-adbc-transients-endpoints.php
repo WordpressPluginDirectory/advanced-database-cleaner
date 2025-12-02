@@ -1,9 +1,8 @@
 <?php
 
-// Exit if accessed directly or not on the main site.
-if ( ! defined( 'ABSPATH' ) || ! is_main_site() ) {
+// Exit if accessed directly
+if ( ! defined( 'ABSPATH' ) )
 	exit;
-}
 
 /**
  * ADBC Transients Endpoints.
@@ -123,7 +122,7 @@ class ADBC_Transients_Endpoints {
 		try {
 
 			// Verify if there is a scan in progress. If there is, return an error to prevent conflicts.
-			if ( ADBC_Scan_Utils::is_scan_exists( 'transients' ) )
+			if ( ADBC_VERSION_TYPE === 'PREMIUM' && ADBC_Scan_Utils::is_scan_exists( 'transients' ) )
 				return ADBC_Rest::error( __( 'A scan is in progress. Please wait until it finishes before performing this action.', 'advanced-database-cleaner' ), ADBC_Rest::BAD_REQUEST );
 
 			$validation_answer = ADBC_Common_Validator::validate_endpoint_action_data( "delete_transients", "transients", $request_data );
@@ -140,7 +139,9 @@ class ADBC_Transients_Endpoints {
 
 			// Delete the transients from the scan results
 			$transients_names = array_column( $cleaned_transients, 'name' ); // Create an array containing only the transients names.
-			ADBC_Scan_Utils::update_scan_results_file_after_deletion( 'transients', $transients_names, $not_processed );
+
+			if ( ADBC_VERSION_TYPE === 'PREMIUM' )
+				ADBC_Scan_Utils::update_scan_results_file_after_deletion( 'transients', $transients_names, $not_processed );
 
 			return ADBC_Rest::success( "", count( $not_processed ) );
 

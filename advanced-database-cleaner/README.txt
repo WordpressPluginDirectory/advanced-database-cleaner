@@ -5,7 +5,7 @@ Tags: clean, database, optimize, performance, postmeta
 Requires at least: 5.0.0
 Requires PHP: 7.0
 Tested up to: 6.8.3
-Stable tag: 4.0.0
+Stable tag: 4.0.1
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -249,6 +249,11 @@ This section describes how to install the plugin. In general, there are 3 ways t
 21. Settings page
 
 == Changelog ==
+
+= 4.0.1 – 01/12/2025 =
+- Fix: handling FS_METHOD ftpext in the file system class.
+- Fix: sub-sites in Multisites were not loaded correctly
+- Fix: options and other items cannot be deleted in free version.
 
 = 4.0.0 – 28/11/2025 =
 

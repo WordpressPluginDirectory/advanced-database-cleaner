@@ -1,9 +1,8 @@
 <?php
 
-// Exit if accessed directly or not on the main site.
-if ( ! defined( 'ABSPATH' ) || ! is_main_site() ) {
+// Exit if accessed directly
+if ( ! defined( 'ABSPATH' ) )
 	exit;
-}
 
 /**
  * ADBC files class.
@@ -27,31 +26,54 @@ class ADBC_Files extends ADBC_Singleton {
 		$this->prepare_wp_fs();
 	}
 
-	/**
-	 * Initialize the WordPress file system.
-	 * 
-	 * @return void
-	 */
 	private function prepare_wp_fs() {
 
-		// Initialize the file system if it's not initialized.
-		if ( empty( $GLOBALS['wp_filesystem'] ) ) {
-
-			// Only include file.php if it hasn't been included yet
-			if ( ! function_exists( 'WP_Filesystem' ) )
-				require_once ABSPATH . 'wp-admin/includes/file.php';
-
-			WP_Filesystem(); // Initialize the file system
+		// Load the WP file API if needed.
+		if ( ! function_exists( 'WP_Filesystem' ) ) {
+			require_once ABSPATH . 'wp-admin/includes/file.php';
 		}
 
-		// Set the file system instance
-		$this->wp_fs = ! empty( $GLOBALS['wp_filesystem'] ) ? $GLOBALS['wp_filesystem'] : null;
+		// Initialize the global filesystem instance if it is not already initialized.
+		if ( empty( $GLOBALS['wp_filesystem'] ) ) {
+			WP_Filesystem();
+		}
 
-		// Handle warnings
-		if ( $this->wp_fs === null ) {
-			ADBC_Notifications::instance()->add_notification( 'wp_file_system' );
-		} else {
-			ADBC_Notifications::instance()->delete_notification( 'wp_file_system' ); // Delete any existing warning.
+		$fs = ! empty( $GLOBALS['wp_filesystem'] ) ? $GLOBALS['wp_filesystem'] : null;
+
+		// If FTPext is selected in the FS_METHOD but fails in connection, fall back to direct Filesystem.
+		// This avoids Fatal error: ftp_pwd(): Argument #1 ($ftp) must be of type FTP\Connection, null given
+		if ( $fs instanceof WP_Filesystem_FTPext && empty( $fs->link ) ) {
+
+			if ( ! class_exists( 'WP_Filesystem_Direct' ) ) {
+				require_once ABSPATH . 'wp-admin/includes/class-wp-filesystem-base.php';
+				require_once ABSPATH . 'wp-admin/includes/class-wp-filesystem-direct.php';
+			}
+
+			$fs = new WP_Filesystem_Direct( null );
+		}
+
+		$this->wp_fs = $fs;
+
+		// guarantee FS_CHMOD_* constants exist (important for PHP 8+).
+
+		if ( ! defined( 'FS_CHMOD_DIR' ) ) {
+			$dir_perms = @fileperms( ABSPATH );
+			if ( $dir_perms ) {
+				define( 'FS_CHMOD_DIR', ( $dir_perms & 0777 ) | 0755 );
+			} else {
+				// Safe fallback if fileperms() fails.
+				define( 'FS_CHMOD_DIR', 0755 );
+			}
+		}
+
+		if ( ! defined( 'FS_CHMOD_FILE' ) ) {
+			$file_perms = @fileperms( ABSPATH . 'index.php' );
+			if ( $file_perms ) {
+				define( 'FS_CHMOD_FILE', ( $file_perms & 0777 ) | 0644 );
+			} else {
+				// Safe fallback if fileperms() fails.
+				define( 'FS_CHMOD_FILE', 0644 );
+			}
 		}
 
 	}

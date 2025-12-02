@@ -1,8 +1,7 @@
 <?php
 // Exit if accessed directly.
-if ( ! defined( 'ABSPATH' ) || ! is_main_site() ) {
+if ( ! defined( 'ABSPATH' ) )
 	exit;
-}
 
 /**
  * ADBC_Automation_Endpoints class.

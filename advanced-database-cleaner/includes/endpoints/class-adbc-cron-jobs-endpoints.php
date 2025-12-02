@@ -1,9 +1,8 @@
 <?php
 
-// Exit if accessed directly or not on the main site.
-if ( ! defined( 'ABSPATH' ) || ! is_main_site() ) {
+// Exit if accessed directly
+if ( ! defined( 'ABSPATH' ) )
 	exit;
-}
 
 /**
  * ADBC Cron Jobs Endpoints.
@@ -63,7 +62,7 @@ class ADBC_Cron_Jobs_Endpoints {
 		try {
 
 			// Verify if there is a scan in progress. If there is, return an error to prevent conflicts.
-			if ( ADBC_Scan_Utils::is_scan_exists( 'cron_jobs' ) )
+			if ( ADBC_VERSION_TYPE === 'PREMIUM' && ADBC_Scan_Utils::is_scan_exists( 'cron_jobs' ) )
 				return ADBC_Rest::error( __( 'A scan is in progress. Please wait until it finishes before performing this action.', 'advanced-database-cleaner' ), ADBC_Rest::BAD_REQUEST );
 
 			$validation_answer = ADBC_Common_Validator::validate_endpoint_action_data( "delete_cron_jobs", "cron_jobs", $request_data );
@@ -80,7 +79,9 @@ class ADBC_Cron_Jobs_Endpoints {
 
 			// Delete the cron jobs from the scan results
 			$cron_jobs_names = array_column( $cleaned_cron_jobs, 'name' ); // Create an array containing only the cron job names.
-			ADBC_Scan_Utils::update_scan_results_file_after_deletion( 'cron_jobs', $cron_jobs_names, $not_processed );
+
+			if ( ADBC_VERSION_TYPE === 'PREMIUM' )
+				ADBC_Scan_Utils::update_scan_results_file_after_deletion( 'cron_jobs', $cron_jobs_names, $not_processed );
 
 			return ADBC_Rest::success( "", count( $not_processed ) );
 

@@ -1,9 +1,8 @@
 <?php
 
-// Exit if accessed directly or not on the main site.
-if ( ! defined( 'ABSPATH' ) || ! is_main_site() ) {
+// Exit if accessed directly
+if ( ! defined( 'ABSPATH' ) )
 	exit;
-}
 
 /**
  * ADBC Tables validator class.

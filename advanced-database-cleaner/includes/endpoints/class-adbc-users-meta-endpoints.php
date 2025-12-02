@@ -1,9 +1,8 @@
 <?php
 
-// Exit if accessed directly or not on the main site.
-if ( ! defined( 'ABSPATH' ) || ! is_main_site() ) {
+// Exit if accessed directly
+if ( ! defined( 'ABSPATH' ) )
 	exit;
-}
 
 /**
  * ADBC Users Meta Endpoints.
@@ -63,7 +62,7 @@ class ADBC_Users_Meta_Endpoints {
 		try {
 
 			// Verify if there is a scan in progress. If there is, return an error to prevent conflicts.
-			if ( ADBC_Scan_Utils::is_scan_exists( 'users_meta' ) )
+			if ( ADBC_VERSION_TYPE === 'PREMIUM' && ADBC_Scan_Utils::is_scan_exists( 'users_meta' ) )
 				return ADBC_Rest::error( __( 'A scan is in progress. Please wait until it finishes before performing this action.', 'advanced-database-cleaner' ), ADBC_Rest::BAD_REQUEST );
 
 			$validation_answer = ADBC_Common_Validator::validate_endpoint_action_data( "delete_users_meta", "users_meta", $request_data );
@@ -78,7 +77,9 @@ class ADBC_Users_Meta_Endpoints {
 
 			// Delete the users meta from the scan results
 			$users_meta_names = array_column( $cleaned_users_meta, 'name' ); // Create an array containing only the users meta names.
-			ADBC_Scan_Utils::update_scan_results_file_after_deletion( 'users_meta', $users_meta_names, $not_processed );
+
+			if ( ADBC_VERSION_TYPE === 'PREMIUM' )
+				ADBC_Scan_Utils::update_scan_results_file_after_deletion( 'users_meta', $users_meta_names, $not_processed );
 
 			return ADBC_Rest::success( "", count( $not_processed ) );
 

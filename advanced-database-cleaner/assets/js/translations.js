@@ -1161,12 +1161,6 @@ const translations = [
     "advanced-database-cleaner"
   ),
   __("Save settings", "advanced-database-cleaner"),
-  __("Orphans", "advanced-database-cleaner"),
-  __("Unknown", "advanced-database-cleaner"),
-  __("Not scanned", "advanced-database-cleaner"),
-  __("Less filters", "advanced-database-cleaner"),
-  __("More filters", "advanced-database-cleaner"),
-  __("Show manual corrections only", "advanced-database-cleaner"),
   __("Local scan only", "advanced-database-cleaner"),
   __("Less accurate", "advanced-database-cleaner"),
   __(
@@ -1179,6 +1173,7 @@ const translations = [
     "The plugin will begin by scanning items against your local files, then it will anonymously send the scan results to a secure remote database for more accurate results.",
     "advanced-database-cleaner"
   ),
+  __("Not scanned", "advanced-database-cleaner"),
   __("Selected", "advanced-database-cleaner"),
   __(
     "A scan is in progress. Please wait until it finishes before running a new scan.",
@@ -1277,6 +1272,11 @@ const translations = [
   __("Total timeouts:", "advanced-database-cleaner"),
   __("Total forced timeouts:", "advanced-database-cleaner"),
   __("files", "advanced-database-cleaner"),
+  __("Orphans", "advanced-database-cleaner"),
+  __("Unknown", "advanced-database-cleaner"),
+  __("Less filters", "advanced-database-cleaner"),
+  __("More filters", "advanced-database-cleaner"),
+  __("Show manual corrections only", "advanced-database-cleaner"),
   __("Show filters", "advanced-database-cleaner"),
   __("Hide filters", "advanced-database-cleaner"),
   sprintf(

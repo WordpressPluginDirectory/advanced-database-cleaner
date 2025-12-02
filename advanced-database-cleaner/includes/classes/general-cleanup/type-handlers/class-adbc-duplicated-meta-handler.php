@@ -1,8 +1,7 @@
 <?php
 // Exit if accessed directly.
-if ( ! defined( 'ABSPATH' ) || ! is_main_site() ) {
+if ( ! defined( 'ABSPATH' ) )
 	exit;
-}
 
 /**
  * Class ADBC_Cleanup_Duplicated_Meta_Handler_Base

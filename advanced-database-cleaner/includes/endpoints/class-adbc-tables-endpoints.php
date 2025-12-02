@@ -1,9 +1,8 @@
 <?php
 
-// Exit if accessed directly or not on the main site.
-if ( ! defined( 'ABSPATH' ) || ! is_main_site() ) {
+// Exit if accessed directly
+if ( ! defined( 'ABSPATH' ) )
 	exit;
-}
 
 /**
  * ADBC Tables Endpoints.
@@ -147,7 +146,7 @@ class ADBC_Tables_Endpoints {
 		try {
 
 			// Verify if there is a scan in progress. If there is, return an error to prevent conflicts.
-			if ( ADBC_Scan_Utils::is_scan_exists( 'tables' ) )
+			if ( ADBC_VERSION_TYPE === 'PREMIUM' && ADBC_Scan_Utils::is_scan_exists( 'tables' ) )
 				return ADBC_Rest::error( __( 'A scan is in progress. Please wait until it finishes before performing this action.', 'advanced-database-cleaner' ), ADBC_Rest::BAD_REQUEST );
 
 			$validation_answer = ADBC_Common_Validator::validate_endpoint_action_data( "delete_tables", "tables", $request_data, true );
@@ -165,7 +164,8 @@ class ADBC_Tables_Endpoints {
 			$not_processed = ADBC_Tables::delete_tables( $tables_names ); // Delete the tables
 
 			// Delete the tables from the scan results
-			ADBC_Scan_Utils::update_scan_results_file_after_deletion( 'tables', $tables_names, $not_processed );
+			if ( ADBC_VERSION_TYPE === 'PREMIUM' )
+				ADBC_Scan_Utils::update_scan_results_file_after_deletion( 'tables', $tables_names, $not_processed );
 
 			return ADBC_Rest::success( "", count( $not_processed ) );
 
