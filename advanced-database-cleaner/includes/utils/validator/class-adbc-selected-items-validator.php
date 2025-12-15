@@ -74,10 +74,14 @@ class ADBC_Selected_Items_Validator {
 	 */
 	private static function remove_invalid_structure_selected_items( $items_type, $selected_items ) {
 
-		$is_not_empty = fn( $v ) => ! empty( $v );
-		$is_in_array = fn( $v ) => in_array( $v, [ 'options', 'sitemeta' ], true );
-		$is_numeric = fn( $v ) => is_numeric( $v ) && $v > 0;
-		$is_array = fn( $v ) => is_array( $v );
+		$is_not_empty = function ($v) {
+			return ! empty( $v ); };
+		$is_in_array = function ($v) {
+			return in_array( $v, [ 'options', 'sitemeta' ], true ); };
+		$is_numeric = function ($v) {
+			return is_numeric( $v ) && $v > 0; };
+		$is_array = function ($v) {
+			return is_array( $v ); };
 
 		// Key => validation-callback map for every item type
 		$schema = [ 

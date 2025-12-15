@@ -638,6 +638,7 @@ const translations = [
   ),
   __("items to clean up", "advanced-database-cleaner"),
   __("You can save:", "advanced-database-cleaner"),
+  __("Calculating...", "advanced-database-cleaner"),
   __("All items cleaned!", "advanced-database-cleaner"),
   __("Count", "advanced-database-cleaner"),
   __("Lost space", "advanced-database-cleaner"),
@@ -808,6 +809,11 @@ const translations = [
   __("Select where to display the plugin menu.", "advanced-database-cleaner"),
   __("Hide/show tabs", "advanced-database-cleaner"),
   __("Select which tabs to hide or show in the plugin menu.", "advanced-database-cleaner"),
+  __("Performance settings", "advanced-database-cleaner"),
+  __(
+    "Configure performance-related settings for database cleanup operations and optimization.",
+    "advanced-database-cleaner"
+  ),
   __("Scan settings", "advanced-database-cleaner"),
   __(
     "The scan process identifies to which plugin/theme a table, option, or other element belongs. You can customize this process using the scan settings below.",
@@ -1056,16 +1062,6 @@ const translations = [
     "If enabled, the plugin will list every table in your database, including those with invalid prefix, typically belonging to other WordPress installations or unrelated projects. If you're unsure, keep this option disabled.",
     "advanced-database-cleaner"
   ),
-  __("Today's usage", "advanced-database-cleaner"),
-  __("Credits used today:", "advanced-database-cleaner"),
-  __("Credits reset in:", "advanced-database-cleaner"),
-  __("Refreshing...", "advanced-database-cleaner"),
-  __("Last refresh:", "advanced-database-cleaner"),
-  __(
-    "You have reached your daily limit for remote server requests. Please wait for your credits to reset or upgrade your license for a higher limit.",
-    "advanced-database-cleaner"
-  ),
-  __("Upgrade my license", "advanced-database-cleaner"),
   __("Please enter a valid number", "advanced-database-cleaner"),
   sprintf(
     /* translators: 1: minimum value, 2: maximum value */
@@ -1076,6 +1072,39 @@ const translations = [
 
     // %2$s
   ),
+  __("Direct SQL queries", "advanced-database-cleaner"),
+  __(
+    "This method uses direct SQL queries for cleanup operations. This can be faster but may bypass some WordPress mechanisms. For example, when deleting trashed posts, this method will directly remove the posts from the database without triggering associated hooks and actions, which may leave related metadata, taxonomies, and other linked data intact and potentially lead to extra orphaned items.",
+    "advanced-database-cleaner"
+  ),
+  __("Native WP functions", "advanced-database-cleaner"),
+  __(
+    "This method uses WordPress native functions for cleanup operations. This ensures compatibility with WordPress but may be slower. For example, when deleting trashed posts, this method will trigger all associated hooks and actions to delete related metadata, taxonomies, and other linked data, ensuring a thorough cleanup.",
+    "advanced-database-cleaner"
+  ),
+  __("Please enter valid numbers for the performance settings", "advanced-database-cleaner"),
+  __(
+    "Choose the method used for database cleanup operations. SQL offers direct database manipulation, while Native uses WordPress functions.",
+    "advanced-database-cleaner"
+  ),
+  __("Cleanup method", "advanced-database-cleaner"),
+  __("Database rows batches", "advanced-database-cleaner"),
+  __(
+    "Specifies the number of rows to process in each batch when reading database tables. Reducing this value can help optimize performance and memory usage when dealing with large tables.",
+    "advanced-database-cleaner"
+  ),
+  __("Saving...", "advanced-database-cleaner"),
+  __("Save settings", "advanced-database-cleaner"),
+  __("Today's usage", "advanced-database-cleaner"),
+  __("Credits used today:", "advanced-database-cleaner"),
+  __("Credits reset in:", "advanced-database-cleaner"),
+  __("Refreshing...", "advanced-database-cleaner"),
+  __("Last refresh:", "advanced-database-cleaner"),
+  __(
+    "You have reached your daily limit for remote server requests. Please wait for your credits to reset or upgrade your license for a higher limit.",
+    "advanced-database-cleaner"
+  ),
+  __("Upgrade my license", "advanced-database-cleaner"),
   sprintf(
     /* translators: 1: minimum value, 2: maximum value */
     __("Value must be between %1$s and %2$s", "advanced-database-cleaner"),
@@ -1150,17 +1179,11 @@ const translations = [
     "Specifies the size (in kilobytes) of the content chunk read from a file in each iteration. Reducing this value may help prevent memory issues when processing large files.",
     "advanced-database-cleaner"
   ),
-  __("Database rows batches", "advanced-database-cleaner"),
-  __(
-    "Specifies the number of rows to process in each batch when reading database tables. Adjusting this value can help optimize performance and memory usage when dealing with large tables.",
-    "advanced-database-cleaner"
-  ),
   __("Max execution time", "advanced-database-cleaner"),
   __(
     "Specifies the maximum execution time for scan operations in seconds. Adjusting this value can help prevent long-running scans from causing timeout issues. Default is 0, which means the plugin will decide the best value.",
     "advanced-database-cleaner"
   ),
-  __("Save settings", "advanced-database-cleaner"),
   __("Local scan only", "advanced-database-cleaner"),
   __("Less accurate", "advanced-database-cleaner"),
   __(
@@ -1280,13 +1303,13 @@ const translations = [
   __("Show filters", "advanced-database-cleaner"),
   __("Hide filters", "advanced-database-cleaner"),
   sprintf(
-    /* translators: %d: number of cron jobs with no action */
-    __("%d cron job(s) with no action", "advanced-database-cleaner"),
+    /* translators: %s: number of cron jobs with no action */
+    __("%s cron job(s) with no action", "advanced-database-cleaner"),
     variable
   ),
   sprintf(
-    /* translators: %d: number of cron jobs not scanned */
-    __("%d cron job(s) not scanned", "advanced-database-cleaner"),
+    /* translators: %s: number of cron jobs not scanned */
+    __("%s cron job(s) not scanned", "advanced-database-cleaner"),
     variable
   ),
   __("Search in", "advanced-database-cleaner"),
@@ -1308,33 +1331,33 @@ const translations = [
     variable
   ),
   sprintf(
-    /* translators: %d: number of big options */
-    __("%d big option(s) detected", "advanced-database-cleaner"),
+    /* translators: %s: number of big options */
+    __("%s big option(s) detected", "advanced-database-cleaner"),
     variable
   ),
   sprintf(
-    /* translators: %d: number of options not scanned */
-    __("%d option(s) not scanned", "advanced-database-cleaner"),
+    /* translators: %s: number of options not scanned */
+    __("%s option(s) not scanned", "advanced-database-cleaner"),
     variable
   ),
   sprintf(
-    /* translators: %d: number of unused post meta */
-    __("%d unused post meta", "advanced-database-cleaner"),
+    /* translators: %s: number of unused post meta */
+    __("%s unused post meta", "advanced-database-cleaner"),
     variable
   ),
   sprintf(
-    /* translators: %d: number of duplicated post meta */
-    __("%d duplicated post meta", "advanced-database-cleaner"),
+    /* translators: %s: number of duplicated post meta */
+    __("%s duplicated post meta", "advanced-database-cleaner"),
     variable
   ),
   sprintf(
-    /* translators: %d: number of big post meta */
-    __("%d big post meta detected", "advanced-database-cleaner"),
+    /* translators: %s: number of big post meta */
+    __("%s big post meta detected", "advanced-database-cleaner"),
     variable
   ),
   sprintf(
-    /* translators: %d: number of post meta not scanned */
-    __("%d post meta not scanned", "advanced-database-cleaner"),
+    /* translators: %s: number of post meta not scanned */
+    __("%s post meta not scanned", "advanced-database-cleaner"),
     variable
   ),
   __("Unused", "advanced-database-cleaner"),
@@ -1344,60 +1367,60 @@ const translations = [
   __("Valid prefix", "advanced-database-cleaner"),
   __("Invalid prefix", "advanced-database-cleaner"),
   sprintf(
-    /* translators: %d: number of tables to optimize */
-    __("%d table(s) to optimize", "advanced-database-cleaner"),
+    /* translators: %s: number of tables to optimize */
+    __("%s table(s) to optimize", "advanced-database-cleaner"),
     variable
   ),
   sprintf(
-    /* translators: %d: number of tables to repair */
-    __("%d table(s) to repair", "advanced-database-cleaner"),
+    /* translators: %s: number of tables to repair */
+    __("%s table(s) to repair", "advanced-database-cleaner"),
     variable
   ),
   sprintf(
-    /* translators: %d: number of tables with invalid prefix */
-    __("%d table(s) with invalid prefix", "advanced-database-cleaner"),
+    /* translators: %s: number of tables with invalid prefix */
+    __("%s table(s) with invalid prefix", "advanced-database-cleaner"),
     variable
   ),
   sprintf(
-    /* translators: %d: number of tables not scanned */
-    __("%d table(s) not scanned", "advanced-database-cleaner"),
+    /* translators: %s: number of tables not scanned */
+    __("%s table(s) not scanned", "advanced-database-cleaner"),
     variable
   ),
   __("Table status", "advanced-database-cleaner"),
   __("Prefix status", "advanced-database-cleaner"),
   sprintf(
-    /* translators: %d: number of expired transients */
-    __("%d expired transient(s) detected", "advanced-database-cleaner"),
+    /* translators: %s: number of expired transients */
+    __("%s expired transient(s) detected", "advanced-database-cleaner"),
     variable
   ),
   sprintf(
-    /* translators: %d: number of big transients */
-    __("%d big transient(s) detected", "advanced-database-cleaner"),
+    /* translators: %s: number of big transients */
+    __("%s big transient(s) detected", "advanced-database-cleaner"),
     variable
   ),
   sprintf(
-    /* translators: %d: number of transients not scanned */
-    __("%d transient(s) not scanned", "advanced-database-cleaner"),
+    /* translators: %s: number of transients not scanned */
+    __("%s transient(s) not scanned", "advanced-database-cleaner"),
     variable
   ),
   sprintf(
-    /* translators: %d: number of unused user meta */
-    __("%d unused user meta", "advanced-database-cleaner"),
+    /* translators: %s: number of unused user meta */
+    __("%s unused user meta", "advanced-database-cleaner"),
     variable
   ),
   sprintf(
-    /* translators: %d: number of duplicated user meta */
-    __("%d duplicated user meta", "advanced-database-cleaner"),
+    /* translators: %s: number of duplicated user meta */
+    __("%s duplicated user meta", "advanced-database-cleaner"),
     variable
   ),
   sprintf(
-    /* translators: %d: number of big user meta */
-    __("%d big user meta detected", "advanced-database-cleaner"),
+    /* translators: %s: number of big user meta */
+    __("%s big user meta detected", "advanced-database-cleaner"),
     variable
   ),
   sprintf(
-    /* translators: %d: number of user meta not scanned */
-    __("%d user meta not scanned", "advanced-database-cleaner"),
+    /* translators: %s: number of user meta not scanned */
+    __("%s user meta not scanned", "advanced-database-cleaner"),
     variable
   )
 ];

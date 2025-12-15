@@ -1,11 +1,11 @@
-=== Advanced Database Cleaner – Optimize & Clean database to Speed Up Site Performance ===
+=== Advanced Database Cleaner – Optimize & Clean Database to Speed Up Site Performance ===
 Contributors: symptote
 Donate Link: https://www.sigmaplugin.com/donation
 Tags: clean, database, optimize, performance, postmeta
 Requires at least: 5.0.0
 Requires PHP: 7.0
-Tested up to: 6.8.3
-Stable tag: 4.0.1
+Tested up to: 6.9
+Stable tag: 4.0.3
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -250,9 +250,33 @@ This section describes how to install the plugin. In general, there are 3 ways t
 
 == Changelog ==
 
+= 4.0.3 – 14/12/2025 =
+- Fix: Improved compatibility with PHP 7.
+- Tweak: Optimized the loading of the Post Meta module for large websites.
+- Tweak: Highlighted preset filter section counters are now fetched via separate endpoints for better performance.
+- Tweak: Optimized the duplicated meta module to improve performance.
+- Tweak: Optimized the General Cleanup module for faster loading.
+- Tweak: Overall performance improvements and internal code optimizations.
+
+= 4.0.2 – 05/12/2025 =
+- Fix: Conflict with another plugin injecting links into our plugin settings.
+- Fix: Syntax error: unexpected '...' (T_ELLIPSIS), expecting ']'.
+- Fix: Deletion of transients and expired_transients in multisite within the sitemeta table when the transient's site_id is invalid.
+- Fix: Duplicate "squared" transients and expired transients being displayed.
+- Tweak: Synchronize Axios timeout (React) with PHP max execution time to avoid early request timeouts.
+- Tweak: In trashed comments, count only trashed comments and ignore comments belonging to trashed posts.
+- Tweak: Use crc32 hashing to speed up detection of duplicate values.
+- Tweak: General code cleanup and optimization.
+- Tweak: [Premium] Added new WordPress-related items for improved identification.
+- New: [Free] new setting allowing to control the number of items retrieved from the database per request for better performance.
+- New: Choose between native WordPress functions or direct SQL queries for deleting items (new setting added).
+- New: Items in the General Cleanup page are now loaded individually, so content appears immediately without waiting for all items.
+- New: Items can now be deleted one by one in General Cleanup without reloading the entire list after each action.
+- Compatibility: Tested with WordPress 6.9.
+
 = 4.0.1 – 01/12/2025 =
 - Fix: handling FS_METHOD ftpext in the file system class.
-- Fix: sub-sites in Multisites were not loaded correctly
+- Fix: sub-sites in Multisites were not loaded correctly.
 - Fix: options and other items cannot be deleted in free version.
 
 = 4.0.0 – 28/11/2025 =
@@ -523,7 +547,7 @@ New release.
 As you use WordPress, your database accumulates a large amount of unnecessary data such as revisions, spam comments, trashed comments, and more. This clutter slowly increases the size of your database, which can make your site slower and make backups take longer. Cleaning this data keeps your site lighter, faster, and easier to maintain.
 
 = Is it safe to clean my database? =
-Yes, it is safe. The plugin does not run any code that can break your site or delete posts, pages, or approved comments. It only removes items that WordPress considers unnecessary. However, you should always back up your database before performing any cleanup. This is required, not optional—backups ensure you can always restore your site if something unexpected happens.
+Yes, it is safe. The plugin does not run any code that can break your site or delete posts, pages, or approved comments. It only removes items that WordPress considers unnecessary. However, you should always back up your database before performing any cleanup. This is required, not optional! Backups ensure you can always restore your site if something unexpected happens.
 
 = Why should I "optimize my database"? =
 Optimizing your database reclaims unused space and reorganizes the way data is stored inside your tables. Over time, tables become fragmented, especially on active websites. Optimization reduces storage usage and improves the speed at which your database responds. This process is safe and can significantly improve performance on large or busy websites.

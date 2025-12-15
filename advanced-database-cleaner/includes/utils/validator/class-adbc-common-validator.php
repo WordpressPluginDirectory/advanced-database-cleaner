@@ -421,8 +421,7 @@ class ADBC_Common_Validator {
 
 		$items_type = sanitize_key( $items_type );
 
-		$valid_items_type = in_array(
-			$items_type,
+		$valid_items = array_merge(
 			[ 
 				'options',
 				'tables',
@@ -430,9 +429,11 @@ class ADBC_Common_Validator {
 				'transients',
 				'posts_meta',
 				'users_meta',
-				...ADBC_Cleanup_Type_Registry::get_all_items_type() // Add all registered general cleanup types
-			]
+			],
+			ADBC_Cleanup_Type_Registry::get_all_items_type()
 		);
+
+		$valid_items_type = in_array( $items_type, $valid_items, true );
 
 		return $valid_items_type ? $items_type : '';
 

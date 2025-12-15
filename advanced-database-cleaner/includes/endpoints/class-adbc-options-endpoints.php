@@ -131,6 +131,12 @@ class ADBC_Options_Endpoints {
 
 			$cleaned_options = ADBC_Hardcoded_Items::instance()->exclude_hardcoded_items_from_selected_items( $validation_answer, 'options', "wp" );
 
+			if ( ADBC_VERSION_TYPE === 'PREMIUM' )
+				$cleaned_options = ADBC_Scan_Utils::exclude_r_wp_items_from_selected_items( $cleaned_options, 'options' );
+
+			if ( empty( $cleaned_options ) )
+				return ADBC_Rest::error( __( "Selected options cannot be deleted because they belong to WordPress.", 'advanced-database-cleaner' ), ADBC_Rest::BAD_REQUEST );
+
 			$grouped = ADBC_Selected_Items_Validator::group_selected_items_by_site_id( $cleaned_options );
 
 			$not_processed = ADBC_Options::delete_options( $grouped );
@@ -147,6 +153,46 @@ class ADBC_Options_Endpoints {
 
 			return ADBC_Rest::error_for_uncaught_exception( __METHOD__, $e );
 
+		}
+	}
+
+	/**
+	 * Count the size of all autoloaded options in the wp_options table.
+	 *
+	 * @return WP_REST_Response The response.
+	 */
+	public static function count_big_options() {
+		try {
+			return ADBC_Rest::success( "", ADBC_Options::count_big_options() );
+		} catch (Throwable $e) {
+			return ADBC_Rest::error_for_uncaught_exception( __METHOD__, $e );
+		}
+	}
+
+	/**
+	 * Count the total number of options that are not scanned.
+	 *
+	 * @return WP_REST_Response The response.
+	 */
+	public static function count_total_not_scanned_options() {
+
+		try {
+			return ADBC_Rest::success( "", ADBC_Options::count_total_not_scanned_options() );
+		} catch (Throwable $e) {
+			return ADBC_Rest::error_for_uncaught_exception( __METHOD__, $e );
+		}
+	}
+
+	/**
+	 * Count the health of the autoloaded options.
+	 *
+	 * @return WP_REST_Response The response.
+	 */
+	public static function get_autoload_health() {
+		try {
+			return ADBC_Rest::success( "", ADBC_Options::count_autoload_size_using_sql() );
+		} catch (Throwable $e) {
+			return ADBC_Rest::error_for_uncaught_exception( __METHOD__, $e );
 		}
 	}
 

@@ -73,6 +73,12 @@ class ADBC_Posts_Meta_Endpoints {
 
 			$cleaned_posts_meta = ADBC_Hardcoded_Items::instance()->exclude_hardcoded_items_from_selected_items( $validation_answer, 'posts_meta', "wp" );
 
+			if ( ADBC_VERSION_TYPE === 'PREMIUM' )
+				$cleaned_posts_meta = ADBC_Scan_Utils::exclude_r_wp_items_from_selected_items( $cleaned_posts_meta, 'posts_meta' );
+
+			if ( empty( $cleaned_posts_meta ) )
+				return ADBC_Rest::error( __( "Selected post meta cannot be deleted because they belong to WordPress.", 'advanced-database-cleaner' ), ADBC_Rest::BAD_REQUEST );
+
 			$grouped = ADBC_Selected_Items_Validator::group_selected_items_by_site_id( $cleaned_posts_meta );
 
 			$not_processed = ADBC_Posts_Meta::delete_posts_meta( $grouped );
@@ -90,6 +96,66 @@ class ADBC_Posts_Meta_Endpoints {
 			return ADBC_Rest::error_for_uncaught_exception( __METHOD__, $e );
 
 		}
+	}
+
+	/**
+	 * Count the total number of big posts meta in all sites.
+	 *
+	 * @return WP_REST_Response The response.
+	 */
+	public static function count_big_posts_meta() {
+
+		try {
+			return ADBC_Rest::success( "", ADBC_Posts_Meta::count_big_posts_meta() );
+		} catch (Throwable $e) {
+			return ADBC_Rest::error_for_uncaught_exception( __METHOD__, $e );
+		}
+
+	}
+
+	/**
+	 * Count the total number of posts meta that are not scanned.
+	 *
+	 * @return WP_REST_Response The response.
+	 */
+	public static function count_total_not_scanned_posts_meta() {
+
+		try {
+			return ADBC_Rest::success( "", ADBC_Posts_Meta::count_total_not_scanned_posts_meta() );
+		} catch (Throwable $e) {
+			return ADBC_Rest::error_for_uncaught_exception( __METHOD__, $e );
+		}
+
+	}
+
+	/**
+	 * Count the total number of duplicated posts meta.
+	 *
+	 * @return WP_REST_Response The response.
+	 */
+	public static function count_duplicated_posts_meta() {
+
+		try {
+			return ADBC_Rest::success( "", ADBC_Posts_Meta::count_duplicated_posts_meta() );
+		} catch (Throwable $e) {
+			return ADBC_Rest::error_for_uncaught_exception( __METHOD__, $e );
+		}
+
+	}
+
+	/**
+	 * Count the total number of unused posts meta.
+	 *
+	 * @return WP_REST_Response The response.
+	 */
+	public static function count_unused_posts_meta() {
+
+		try {
+			return ADBC_Rest::success( "", ADBC_Posts_Meta::count_unused_posts_meta() );
+		} catch (Throwable $e) {
+			return ADBC_Rest::error_for_uncaught_exception( __METHOD__, $e );
+		}
+
 	}
 
 }

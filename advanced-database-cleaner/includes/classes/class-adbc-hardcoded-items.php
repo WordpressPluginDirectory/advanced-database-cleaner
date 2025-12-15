@@ -263,7 +263,9 @@ class ADBC_Hardcoded_Items extends ADBC_Singleton {
 		'wp_force_deactivated_plugins' => '',
 		'wpmu_sitewide_plugins' => '',
 		'wpmu_upgrade_site' => '',
-		'wp_attachment_pages_enabled' => ''
+		'wp_attachment_pages_enabled' => '',
+		// 6.9
+		'wp_notes_notify' => '',
 	];
 
 	/**
@@ -421,6 +423,14 @@ class ADBC_Hardcoded_Items extends ADBC_Singleton {
 			'concatenated_with' => 'md5'
 		],
 		'_transient_feed_mod_' => [ 
+			'rule' => 'starts_with',
+			'concatenated_with' => 'md5'
+		],
+		'_site_transient_feed_' => [ 
+			'rule' => 'starts_with',
+			'concatenated_with' => 'md5'
+		],
+		'_site_transient_feed_mod_' => [ 
 			'rule' => 'starts_with',
 			'concatenated_with' => 'md5'
 		],

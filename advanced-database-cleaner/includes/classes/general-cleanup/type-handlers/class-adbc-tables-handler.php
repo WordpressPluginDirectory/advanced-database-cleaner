@@ -70,7 +70,8 @@ class ADBC_Cleanup_Optimize_Tables_Handler extends ADBC_Cleanup_Tables_Handler {
 		$to_optimize_tables = ADBC_Tables::get_tables_to_optimize();
 
 		// get only tables names
-		$to_optimize_tables = array_map( fn( $table ) => $table->table_name, $to_optimize_tables );
+		$to_optimize_tables = array_map( function ($table) {
+			return $table->table_name; }, $to_optimize_tables );
 
 		$not_optimized = ADBC_Tables::optimize_tables( $to_optimize_tables );
 

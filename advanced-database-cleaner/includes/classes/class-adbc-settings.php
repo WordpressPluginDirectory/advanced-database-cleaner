@@ -106,7 +106,7 @@ class ADBC_Settings extends ADBC_Singleton {
 			'database_rows_batch' => [ 
 				'default' => 10000,
 				'validator_class' => 'ADBC_Settings_Validator',
-				'validator_method' => 'is_scan_setting_valid'
+				'validator_method' => 'is_performance_settings_valid'
 			],
 			'file_content_chunks' => [ 
 				'default' => 1024 * 1, // (for 1024 KB)
@@ -162,6 +162,11 @@ class ADBC_Settings extends ADBC_Singleton {
 				'default' => '0',
 				'validator_class' => 'ADBC_Common_Validator',
 				'validator_method' => 'is_string_equals_0_or_1'
+			],
+			'sql_or_native_cleanup_method' => [ 
+				'default' => 'sql',
+				'validator_class' => 'ADBC_Settings_Validator',
+				'validator_method' => 'is_performance_settings_valid'
 			],
 			// 'license_data' => [ 
 			// 	'default' => [],

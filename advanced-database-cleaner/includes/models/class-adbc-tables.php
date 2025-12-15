@@ -23,15 +23,10 @@ class ADBC_Tables {
 	public static function get_tables_list( $filters ) {
 
 		$show_tables_with_invalid_prefix = ADBC_Settings::instance()->get_setting( 'show_tables_with_invalid_prefix' );
-		$tables_to_repair_data = self::get_tables_to_repair(); // Get the tables to repair data and refresh the count if needed
 
 		// Prepare variables
 		$tables_list = [];
 		$total_tables = 0;
-		$total_tables_to_optimize = 0;
-		$total_tables_to_repair = $tables_to_repair_data[0];
-		$total_tables_with_invalid_prefix = 0;
-		$total_not_scanned = 0;
 
 		$scan_counter = new ADBC_Scan_Counter();
 
@@ -61,22 +56,6 @@ class ADBC_Tables {
 			ADBC_Hardcoded_Items::instance()->load_hardcoded_scan_results_to_tables_rows( $tables ); // Load hardcoded items to the tables rows
 
 			foreach ( $tables as $table_name => $table_data ) {
-
-				/* ──────────────────────────────────────────────────────────────
-				 * Prepare counts for health check filters
-				 * ─────────────────────────────────────────────────────────────*/
-
-				// Count overhead for tables that are not InnoDB
-				if ( $table_data->type !== 'InnoDB' && $table_data->overhead > 0 )
-					$total_tables_to_optimize++;
-
-				// count tables with invalid prefix
-				if ( $show_tables_with_invalid_prefix === "1" && ! self::is_table_having_valid_prefix( $table_name ) )
-					$total_tables_with_invalid_prefix++;
-
-				// count not scanned tables
-				if ( $table_data->belongs_to['type'] == 'u' )
-					$total_not_scanned++;
 
 				/* ──────────────────────────────────────────────────────────────────────────────────
 				 * Ignore tables that don't satisfy the filters and belongs_to, then process the rest
@@ -137,10 +116,6 @@ class ADBC_Tables {
 			'items' => $tables_list,
 			'total_items' => $total_tables,
 			'real_current_page' => min( $filters['current_page'], $total_real_pages ),
-			'to_optimize_count' => $total_tables_to_optimize,
-			'to_repair_count' => $total_tables_to_repair,
-			'invalid_prefix_count' => $total_tables_with_invalid_prefix,
-			'not_scanned_count' => $total_not_scanned,
 			'categorization_count' => $scan_counter->get_categorization_count(),
 			'plugins_count' => $scan_counter->get_plugins_count(),
 			'themes_count' => $scan_counter->get_themes_count()
@@ -790,6 +765,61 @@ class ADBC_Tables {
 			$wpdb->prepare( 'SHOW TABLES LIKE %s', $table_name )
 		);
 		return $exists;
+	}
+
+	/**
+	 * Count the total number of tables that are not scanned.
+	 *
+	 * @return int Total tables that are not scanned.
+	 */
+	public static function count_total_not_scanned_tables() {
+
+		$total_not_scanned = 0;
+
+		$show_tables_with_invalid_prefix = ADBC_Settings::instance()->get_setting( 'show_tables_with_invalid_prefix' );
+		$show_tables_with_invalid_prefix = $show_tables_with_invalid_prefix === '1';
+
+		$limit = ADBC_Settings::instance()->get_setting( 'database_rows_batch' );
+		$offset = 0;
+
+		do {
+
+			$tables_names = self::get_tables_names( $limit, $offset, false, $show_tables_with_invalid_prefix );
+			$fetched_count = count( $tables_names );
+			$not_scanned_count = 0;
+			$tables_names = array_keys( $tables_names ); // Get the tables names as an array
+
+			if ( ADBC_VERSION_TYPE === 'PREMIUM' )
+				$not_scanned_count = ADBC_Scan_Utils::count_not_scanned_items_in_list( 'tables', $tables_names );
+			else
+				$not_scanned_count = ADBC_Common_Model::count_not_scanned_items_in_list_for_free( 'tables', $tables_names );
+
+			$total_not_scanned += $not_scanned_count;
+
+			$offset += $limit;
+
+		} while ( $fetched_count == $limit ); // Continue if the last batch was full
+
+		return $total_not_scanned;
+
+	}
+
+	/**
+	 * Count the total number of tables to optimize.
+	 *
+	 * @return int Total tables to optimize.
+	 */
+	public static function count_total_tables_to_optimize() {
+		return count( self::get_tables_to_optimize() );
+	}
+
+	/**
+	 * Count the total number of tables to repair.
+	 *
+	 * @return int Total tables to repair.
+	 */
+	public static function count_total_tables_to_repair() {
+		return self::get_tables_to_repair()[0];
 	}
 
 }

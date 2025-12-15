@@ -26,6 +26,9 @@ class ADBC_Files extends ADBC_Singleton {
 		$this->prepare_wp_fs();
 	}
 
+	/**
+	 * Prepare the WordPress file system.
+	 */
 	private function prepare_wp_fs() {
 
 		// Load the WP file API if needed.

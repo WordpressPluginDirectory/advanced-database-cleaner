@@ -27,11 +27,6 @@ class ADBC_Posts_Meta {
 		$posts_meta_list = [];
 		$total_posts_meta = 0;
 
-		$big_posts_meta_count = self::count_big_posts_meta();
-		$not_scanned_count = self::count_total_not_scanned_posts_meta();
-		$duplicated_posts_meta_count = self::count_duplicated_posts_meta();
-		$unused_posts_meta_count = self::count_unused_posts_meta();
-
 		$scan_counter = new ADBC_Scan_Counter();
 
 		$startRecord = ( $filters['current_page'] - 1 ) * $filters['items_per_page'];
@@ -77,7 +72,6 @@ class ADBC_Posts_Meta {
 						'name' => $post_meta->name, // Used in the known addons modal & "show value modal". To be generic and work for all items types.
 						'meta_key' => $post_meta->name,
 						'value' => $post_meta->value,
-						'is_truncated' => $post_meta->is_truncated,
 						'size' => $post_meta->size,
 						'post_id' => $post_meta->post_id,
 						'site_id' => $post_meta->site_id,
@@ -106,10 +100,6 @@ class ADBC_Posts_Meta {
 			'items' => $posts_meta_list,
 			'total_items' => $total_posts_meta,
 			'real_current_page' => min( $filters['current_page'], $total_real_pages ),
-			'big_posts_meta_count' => $big_posts_meta_count,
-			'not_scanned_count' => $not_scanned_count,
-			'duplicated_posts_meta_count' => $duplicated_posts_meta_count,
-			'unused_posts_meta_count' => $unused_posts_meta_count,
 			'categorization_count' => $scan_counter->get_categorization_count(),
 			'plugins_count' => $scan_counter->get_plugins_count(),
 			'themes_count' => $scan_counter->get_themes_count(),
@@ -120,16 +110,20 @@ class ADBC_Posts_Meta {
 	 * Get the posts meta list that satisfy the UI filters.
 	 *
 	 * @param array $filters Output of sanitize_filters().
-	 * @param int $limit Limit for the number of rows to return.
-	 * @param int $offset Offset for the number of rows to return.
+	 * @param int   $limit   Limit for the number of rows to return.
+	 * @param int   $offset  Offset for the number of rows to return.
 	 *
 	 * @return array List of posts meta that satisfy the filters.
 	 */
 	private static function get_posts_meta_list_batch( $filters, $limit, $offset ) {
 
 		global $wpdb;
+
 		$sites_list = ADBC_Sites::instance()->get_sites_list( $filters['site_id'] );
-		$union_queries = [];
+
+		// If there is only ONE site to query (single-site install or a specific site selected in filters),
+		// we can avoid UNION and the derived table, and query that table directly.
+		$is_single_site_query = ( count( $sites_list ) === 1 );
 
 		/* ────────────────────────────────────────────────────────────
 		 * Build a safe ORDER BY clause
@@ -143,7 +137,7 @@ class ADBC_Posts_Meta {
 
 		$sort_col = $filters['sort_by'] ?? '';
 		$sort_dir = strtoupper( $filters['sort_order'] ?? 'ASC' );
-		$sort_dir = $sort_dir === 'DESC' ? 'DESC' : 'ASC';
+		$sort_dir = ( $sort_dir === 'DESC' ) ? 'DESC' : 'ASC';
 
 		// Add 'order by' clause if the column is allowed.
 		$order_by_sql = isset( $allowed_columns[ $sort_col ] )
@@ -151,24 +145,56 @@ class ADBC_Posts_Meta {
 			: '';
 
 		/* ────────────────────────────────────────────────────────────
-		 * Loop through all sites and prepare the SQL for each site
+		 * Single-site path (no UNION, no derived table)
 		 * ────────────────────────────────────────────────────────────*/
-		// Offset starts from 0, so we need to add the limit to it to increment the number of rows to fetch in each iteration.
+		if ( $is_single_site_query ) {
+
+			$site = reset( $sites_list );
+			$table_name = $site['prefix'] . 'postmeta';
+			$site_id = $site['id'];
+
+			$sql = self::prepare_posts_meta_list_sql_for_single_site(
+				$site_id,
+				$table_name,
+				$filters,
+				$order_by_sql,
+				$limit,
+				$offset
+			);
+
+			return $wpdb->get_results( $sql, OBJECT );
+		}
+
+		/* ────────────────────────────────────────────────────────────
+		 * Multisite path (UNION across all sites)
+		 * ────────────────────────────────────────────────────────────*/
+
+		$union_queries = [];
+
+		// Offset starts from 0, so we need to add the limit to it to increment the
+		// number of rows to fetch in each iteration.
 		$total_rows_to_fetch = $offset + $limit;
+
 		foreach ( $sites_list as $site ) {
-			$table_name = $site['prefix'] . "postmeta"; // Get the postmeta table name for the current site
-			$site_id = $site['id']; // Get the site ID for the current site
-			$union_queries[] = self::prepare_posts_meta_list_sql_for_union( $site_id, $table_name, $filters, $order_by_sql, $total_rows_to_fetch );
+			$table_name = $site['prefix'] . 'postmeta'; // Get the postmeta table name for the current site
+			$site_id = $site['id'];                  // Get the site ID for the current site
+			$union_queries[] = self::prepare_posts_meta_list_sql_for_union(
+				$site_id,
+				$table_name,
+				$filters,
+				$order_by_sql,
+				$total_rows_to_fetch
+			);
 		}
 
 		$union_sql = implode( "\nUNION ALL\n", $union_queries );
 
 		$sql = $wpdb->prepare(
 			"SELECT *
-				FROM ( {$union_sql} ) AS rows_merged
-				{$order_by_sql}
-				LIMIT %d OFFSET %d
-			",
+			FROM ( {$union_sql} ) AS rows_merged
+			{$order_by_sql}
+			LIMIT %d OFFSET %d
+		",
 			$limit,
 			$offset
 		);
@@ -177,28 +203,55 @@ class ADBC_Posts_Meta {
 	}
 
 	/**
-	 * Prepare a SQL query string to get the posts meta list that satisfy the UI filters. It will be used in a UNION query to get all posts meta in all sites.
+	 * Prepare a SQL query string to get the posts meta list for a single site
+	 * (no UNION, no derived table).
 	 *
-	 * @param int $site_id Site ID to query.
+	 * @param int    $site_id    Site ID to query.
 	 * @param string $table_name Postmeta table name to query.
-	 * @param array $filters Output of sanitize_filters().
+	 * @param array  $filters    Output of sanitize_filters().
 	 * @param string $order_by_sql SQL query clause to order the results.
-	 * @param int $total_rows_to_fetch Limit for the number of rows to return.
+	 * @param int    $limit      Limit for the number of rows to return.
+	 * @param int    $offset     Offset for the number of rows to return.
 	 *
-	 * @return string SQL query to get the posts meta list.
+	 * @return string SQL query to get the posts meta list for a single site.
 	 */
-	private static function prepare_posts_meta_list_sql_for_union( $site_id, $table_name, $filters, $order_by_sql, $total_rows_to_fetch ) {
+	private static function prepare_posts_meta_list_sql_for_single_site( $site_id, $table_name, $filters, $order_by_sql, $limit, $offset ) {
 
 		global $wpdb;
+
 		$truncate_length = self::TRUNCATE_LENGTH;
-		$params = [ absint( $site_id ) ];  // Place the site_id at the beginning of the params array
+		$params = [ absint( $site_id ) ]; // %d for site_id in SELECT
+		$where = [];
+		$duplicate_join_sql = '';
 
 		/* ────────────────────────────────────────────────────────────
-		 * 2. Assemble the dynamic WHERE parts
+		 * 1. Unused filter
 		 * ────────────────────────────────────────────────────────────*/
-		$where = [];
+		if ( isset( $filters['unused'] ) && in_array( $filters['unused'], [ 'yes', 'no' ], true ) ) {
+			$posts_table = str_replace( 'postmeta', 'posts', $table_name );
+			$unused_sql = "main.post_id NOT IN (SELECT ID FROM {$posts_table})";
+			if ( 'yes' === $filters['unused'] ) {
+				$where[] = $unused_sql;
+			} else {
+				$where[] = "NOT ( {$unused_sql} )";
+			}
+		}
 
-		/* — Search filter — */
+		/* ────────────────────────────────────────────────────────────
+		 * 2. Size ≥ threshold
+		 * ────────────────────────────────────────────────────────────*/
+		if ( ! empty( $filters['size'] ) && (int) $filters['size'] > 0 ) {
+			$bytes = ADBC_Common_Utils::convert_size_to_bytes(
+				$filters['size'],
+				$filters['size_unit']
+			);
+			$where[] = 'OCTET_LENGTH(main.`meta_value`) >= %d';
+			$params[] = $bytes;
+		}
+
+		/* ────────────────────────────────────────────────────────────
+		 * 3. Search filter
+		 * ────────────────────────────────────────────────────────────*/
 		if ( ! empty( $filters['search_for'] ) && ! empty( $filters['search_in'] ) ) {
 
 			$needle = '%' . $wpdb->esc_like( $filters['search_for'] ) . '%';
@@ -217,13 +270,115 @@ class ADBC_Posts_Meta {
 				case 'all':
 					// Search in both columns
 					$where[] = '(main.`meta_key` LIKE %s OR main.`meta_value` LIKE %s)';
-					$params[] = $needle;   // for meta_key
-					$params[] = $needle;   // for meta_value
+					$params[] = $needle; // for meta_key
+					$params[] = $needle; // for meta_value
 					break;
 			}
 		}
 
-		/* — Size ≥ threshold — */
+		/* ────────────────────────────────────────────────────────────
+		 * 4. Duplicated filter (optimized, no correlated subquery)
+		 * ────────────────────────────────────────────────────────────*/
+		if ( isset( $filters['duplicated'] ) && in_array( $filters['duplicated'], [ 'yes', 'no' ], true ) ) {
+
+			// Build a derived table of groups: per (post_id, meta_key, value-hash),
+			// compute min(meta_id) and count(*).
+			$dup_subquery = "
+			SELECT
+				post_id,
+				meta_key,
+				CRC32(meta_value) AS vhash,
+				MIN(meta_id)      AS min_meta_id,
+				COUNT(*)          AS cnt
+			FROM {$table_name}
+			GROUP BY post_id, meta_key, CRC32(meta_value)
+		";
+
+			$duplicate_join_sql = "
+			LEFT JOIN ( {$dup_subquery} ) dupg
+				ON dupg.post_id  = main.post_id
+			   AND dupg.meta_key = main.meta_key
+			   AND dupg.vhash    = CRC32(main.meta_value)
+		";
+
+			if ( 'yes' === $filters['duplicated'] ) {
+				// Only rows that belong to a group with more than one row,
+				// AND that are NOT the minimal meta_id (i.e. the “duplicate” ones).
+				$where[] = '(dupg.cnt > 1 AND main.meta_id > dupg.min_meta_id)';
+			} else {
+				// Only rows that are NOT duplicates:
+				// - either not in any group (cnt is NULL)
+				// - or they are the minimal meta_id in their group.
+				$where[] = '(dupg.cnt IS NULL OR main.meta_id = dupg.min_meta_id)';
+			}
+		}
+
+		$where_sql = ! empty( $where ) ? 'WHERE ' . implode( ' AND ', $where ) : '';
+
+		// Add limit & offset at the end of the params array
+		$params[] = absint( $limit );
+		$params[] = absint( $offset );
+
+		/* ────────────────────────────────────────────────────────────
+		 * Final SQL
+		 * ────────────────────────────────────────────────────────────*/
+		$sql = $wpdb->prepare(
+			"SELECT
+				main.`meta_key`                         AS name,
+				main.`meta_id`                          AS meta_id,
+				main.`post_id`                          AS post_id,
+				SUBSTRING(main.`meta_value`, 1, {$truncate_length}) AS value,
+				OCTET_LENGTH(main.`meta_value`)         AS size,
+				%d                                      AS site_id
+			FROM {$table_name} main
+			{$duplicate_join_sql}
+			{$where_sql}
+			{$order_by_sql}
+			LIMIT %d OFFSET %d
+		",
+			...$params
+		);
+
+		return $sql;
+	}
+
+
+	/**
+	 * Prepare a SQL query string to get the posts meta list that satisfy the UI filters. It will be used in a UNION query to get all posts meta in all sites.
+	 *
+	 * @param int    $site_id             Site ID to query.
+	 * @param string $table_name          Postmeta table name to query.
+	 * @param array  $filters             Output of sanitize_filters().
+	 * @param string $order_by_sql        SQL query clause to order the results.
+	 * @param int    $total_rows_to_fetch Limit for the number of rows to return.
+	 *
+	 * @return string SQL query to get the posts meta list.
+	 */
+	private static function prepare_posts_meta_list_sql_for_union( $site_id, $table_name, $filters, $order_by_sql, $total_rows_to_fetch ) {
+
+		global $wpdb;
+
+		$truncate_length = self::TRUNCATE_LENGTH;
+		$params = [ absint( $site_id ) ];  // Place the site_id at the beginning of the params array
+		$where = [];
+		$duplicate_join_sql = '';
+
+		/* ────────────────────────────────────────────────────────────
+		 * Unused filter
+		 * ────────────────────────────────────────────────────────────*/
+		if ( isset( $filters['unused'] ) && in_array( $filters['unused'], [ 'yes', 'no' ], true ) ) {
+			$posts_table = str_replace( 'postmeta', 'posts', $table_name );
+			$unused_sql = "main.post_id NOT IN (SELECT ID FROM {$posts_table})";
+			if ( 'yes' === $filters['unused'] ) {
+				$where[] = $unused_sql;
+			} else {
+				$where[] = "NOT ( {$unused_sql} )";
+			}
+		}
+
+		/* ────────────────────────────────────────────────────────────
+		 * Size ≥ threshold
+		 * ────────────────────────────────────────────────────────────*/
 		if ( ! empty( $filters['size'] ) && (int) $filters['size'] > 0 ) {
 			$bytes = ADBC_Common_Utils::convert_size_to_bytes(
 				$filters['size'],
@@ -233,51 +388,89 @@ class ADBC_Posts_Meta {
 			$params[] = $bytes;
 		}
 
-		/* — Duplicated filter — */
-		if ( isset( $filters['duplicated'] ) && in_array( $filters['duplicated'], [ 'yes', 'no' ], true ) ) {
-			$exists_sql = "EXISTS (SELECT 1 FROM {$table_name} dup WHERE dup.post_id = main.post_id AND dup.meta_key = main.meta_key AND dup.meta_value = main.meta_value AND dup.meta_id < main.meta_id)";
-			if ( $filters['duplicated'] === 'yes' ) {
-				$where[] = $exists_sql;
-			} else {
-				$where[] = "NOT ( {$exists_sql} )";
+		/* ────────────────────────────────────────────────────────────
+		 * Search filter
+		 * ────────────────────────────────────────────────────────────*/
+		if ( ! empty( $filters['search_for'] ) && ! empty( $filters['search_in'] ) ) {
+
+			$needle = '%' . $wpdb->esc_like( $filters['search_for'] ) . '%';
+
+			switch ( $filters['search_in'] ) {
+				case 'name':
+					$where[] = 'main.`meta_key` LIKE %s';
+					$params[] = $needle;
+					break;
+
+				case 'value':
+					$where[] = 'main.`meta_value` LIKE %s';
+					$params[] = $needle;
+					break;
+
+				case 'all':
+					// Search in both columns
+					$where[] = '(main.`meta_key` LIKE %s OR main.`meta_value` LIKE %s)';
+					$params[] = $needle; // for meta_key
+					$params[] = $needle; // for meta_value
+					break;
 			}
 		}
-
-		/* — Unused filter — */
-		if ( isset( $filters['unused'] ) && in_array( $filters['unused'], [ 'yes', 'no' ], true ) ) {
-			$posts_table = str_replace( 'postmeta', 'posts', $table_name );
-			$unused_sql = "main.post_id NOT IN (SELECT ID FROM {$posts_table})";
-			if ( $filters['unused'] === 'yes' ) {
-				$where[] = $unused_sql;
-			} else {
-				$where[] = "NOT ( {$unused_sql} )";
-			}
-		}
-
-		$where_sql = ! empty( $where ) ? 'WHERE ' . implode( ' AND ', $where ) : '';
-		$params[] = absint( $total_rows_to_fetch ); // Add the limit to the params array
 
 		/* ────────────────────────────────────────────────────────────
-		 * 3. Final SQL and fetch
+		 * Duplicated filter (optimized, no correlated subquery)
+		 * ────────────────────────────────────────────────────────────*/
+		if ( isset( $filters['duplicated'] ) && in_array( $filters['duplicated'], [ 'yes', 'no' ], true ) ) {
+
+			// Build a derived table of groups: per (post_id, meta_key, value-hash),
+			// compute min(meta_id) and count(*).
+			$dup_subquery = "
+			SELECT
+				post_id,
+				meta_key,
+				CRC32(meta_value) AS vhash,
+				MIN(meta_id)      AS min_meta_id,
+				COUNT(*)          AS cnt
+			FROM {$table_name}
+			GROUP BY post_id, meta_key, CRC32(meta_value)
+		";
+
+			$duplicate_join_sql = "
+			LEFT JOIN ( {$dup_subquery} ) dupg
+				ON dupg.post_id  = main.post_id
+			   AND dupg.meta_key = main.meta_key
+			   AND dupg.vhash    = CRC32(main.meta_value)
+		";
+
+			if ( 'yes' === $filters['duplicated'] ) {
+				// Only rows that belong to a group with more than one row,
+				// AND that are NOT the minimal meta_id (i.e. the “duplicate” ones).
+				$where[] = '(dupg.cnt > 1 AND main.meta_id > dupg.min_meta_id)';
+			} else {
+				// Only rows that are NOT duplicates:
+				// - either not in any group (cnt is NULL)
+				// - or they are the minimal meta_id in their group.
+				$where[] = '(dupg.cnt IS NULL OR main.meta_id = dupg.min_meta_id)';
+			}
+		}
+
+
+		$where_sql = ! empty( $where ) ? 'WHERE ' . implode( ' AND ', $where ) : '';
+
+		// Add the limit to the params array
+		$params[] = absint( $total_rows_to_fetch );
+
+		/* ────────────────────────────────────────────────────────────
+		 * Final SQL
 		 * ────────────────────────────────────────────────────────────*/
 		$sql = $wpdb->prepare(
 			"SELECT
 				main.`meta_key`                         AS name,
 				main.`meta_id`                          AS meta_id,
 				main.`post_id`                          AS post_id,
-				CASE
-					WHEN CHAR_LENGTH(main.`meta_value`) > $truncate_length
-					THEN SUBSTRING(main.`meta_value`, 1, $truncate_length)
-					ELSE main.`meta_value`
-				END                                AS value,
-				CASE
-					WHEN CHAR_LENGTH(main.`meta_value`) > $truncate_length
-					THEN 1
-					ELSE 0
-				END             			   AS is_truncated,
+				SUBSTRING(main.`meta_value`, 1, {$truncate_length}) AS value,
 				OCTET_LENGTH(main.`meta_value`)         AS size,
-				%d						   AS site_id
+				%d                                      AS site_id
 			FROM {$table_name} main
+			{$duplicate_join_sql}
 			{$where_sql}
 			{$order_by_sql}
 			LIMIT %d
@@ -321,29 +514,41 @@ class ADBC_Posts_Meta {
 
 	/**
 	 * Count duplicated postmeta across all sites.
-	 * A duplicated postmeta is defined as same (meta_key, meta_value, post_id) with a smaller meta_id existing.
+	 * A duplicated postmeta is defined as same (meta_key, meta_value, post_id)
+	 * where only one row per group is considered "original" and the rest are duplicates.
 	 *
 	 * @return int
 	 */
 	public static function count_duplicated_posts_meta() {
 
 		global $wpdb;
+
 		$total = 0;
 
 		$sites_prefixes = array_keys( ADBC_Sites::instance()->get_all_prefixes() );
+
 		foreach ( $sites_prefixes as $site_prefix ) {
+
 			$table = $site_prefix . 'postmeta';
+
+			// For each (post_id, meta_key, CRC32(meta_value)) group:
+			// - cnt = number of rows
+			// - duplicates in that group = cnt - 1 (if cnt > 1)
+			// Total duplicates = SUM(cnt - 1) over all groups where cnt > 1.
 			$count = (int) $wpdb->get_var( "
-				SELECT COUNT(*)
-				FROM {$table} main
-				WHERE EXISTS (
-					SELECT 1 FROM {$table} dup
-					WHERE dup.post_id = main.post_id
-						AND dup.meta_key = main.meta_key
-						AND dup.meta_value = main.meta_value
-						AND dup.meta_id < main.meta_id
-				)
+				SELECT COALESCE(SUM(g.cnt - 1), 0)
+				FROM (
+					SELECT 
+						post_id,
+						meta_key,
+						CRC32(meta_value) AS vhash,
+						COUNT(*)          AS cnt
+					FROM {$table}
+					GROUP BY post_id, meta_key, CRC32(meta_value)
+					HAVING cnt > 1
+				) AS g
 			" );
+
 			$total += $count;
 		}
 

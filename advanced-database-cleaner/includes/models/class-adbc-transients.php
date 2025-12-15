@@ -28,10 +28,6 @@ class ADBC_Transients {
 		$transients_list = [];
 		$total_transients = 0;
 
-		$expired_transients = ADBC_Cleanup_Type_Registry::handler( 'expired_transients' )->count();
-		$big_transients_count = self::count_big_transients();
-		$not_scanned_count = self::count_total_not_scanned_transients();
-
 		$scan_counter = new ADBC_Scan_Counter();
 
 		$startRecord = ( $filters['current_page'] - 1 ) * $filters['items_per_page'];
@@ -81,7 +77,6 @@ class ADBC_Transients {
 						'expired' => $transient->expired,
 						'timeout' => $transient->timeout,
 						'found_in' => $transient->found_in, // 'options' | 'sitemeta'
-						'is_truncated' => $transient->is_truncated,
 						'size' => $transient->size,
 						'autoload' => $transient->autoload,
 						'site_id' => $transient->site_id,
@@ -110,9 +105,6 @@ class ADBC_Transients {
 			'items' => $transients_list,
 			'total_items' => $total_transients,
 			'real_current_page' => min( $filters['current_page'], $total_real_pages ),
-			'expired_transients' => $expired_transients['count'],
-			'big_transients_count' => $big_transients_count,
-			'not_scanned_count' => $not_scanned_count,
 			'categorization_count' => $scan_counter->get_categorization_count(),
 			'plugins_count' => $scan_counter->get_plugins_count(),
 			'themes_count' => $scan_counter->get_themes_count(),
@@ -290,74 +282,56 @@ class ADBC_Transients {
 			// Regular transients from options table
 			[ 
 				'sql' => "
-            SELECT  a.option_name AS name,
-                    a.option_id  AS id,
-                    CASE
-                      WHEN CHAR_LENGTH(a.option_value) > $length
-                      THEN CONCAT(SUBSTRING(a.option_value,1,$length),'…')
-                      ELSE a.option_value
-                    END             AS value,
-                    b.option_value  AS timeout,
-                    {$site_id}      AS site_id,
-                    'options'       AS found_in,
-                    a.autoload      AS autoload,
-                    LENGTH(a.option_id) + LENGTH(a.option_name) + LENGTH(a.option_value) + LENGTH(a.autoload) AS size,
-                    CASE
-                      WHEN CHAR_LENGTH(a.option_value) > $length
-                      THEN TRUE
-                      ELSE FALSE
-                    END             AS is_truncated,
-                    CASE
-                      WHEN b.option_value IS NOT NULL AND b.option_value < UNIX_TIMESTAMP()
-                      THEN 'yes'
-                      ELSE 'no'
-                    END             AS expired
-            FROM    {$wpdb->options} a
-            LEFT JOIN {$wpdb->options} b
-                   ON b.option_name = CONCAT(
-                        '_transient_timeout_',
-                        SUBSTRING(a.option_name, CHAR_LENGTH('_transient_') + 1)
-                   )
-            WHERE   a.option_name LIKE '\_transient\_%'
-                    AND a.option_name NOT LIKE '\_transient\_timeout\_%'
-        ",
+					SELECT  a.option_name AS name,
+							a.option_id  AS id,
+							SUBSTRING(a.option_value,1,$length) AS value,
+							b.option_value  AS timeout,
+							{$site_id}      AS site_id,
+							'options'       AS found_in,
+							a.autoload      AS autoload,
+							LENGTH(a.option_id) + LENGTH(a.option_name) + LENGTH(a.option_value) + LENGTH(a.autoload) AS size,
+							CASE
+							WHEN b.option_value IS NOT NULL AND b.option_value < UNIX_TIMESTAMP()
+							THEN 'yes'
+							ELSE 'no'
+							END             AS expired
+					FROM    {$wpdb->options} a
+					LEFT JOIN {$wpdb->options} b
+						ON b.option_name = CONCAT(
+								'_transient_timeout_',
+								SUBSTRING(a.option_name, CHAR_LENGTH('_transient_') + 1)
+						)
+					WHERE   a.option_name LIKE '\_transient\_%'
+							AND a.option_name NOT LIKE '\_transient\_timeout\_%'
+        		",
 				'name_col' => 'a.option_name',
 				'value_col' => 'a.option_value',
 			],
 			// Site transients from options table
 			[ 
 				'sql' => "
-            SELECT  a.option_name AS name,
-                    a.option_id  AS id,
-                    CASE
-                      WHEN CHAR_LENGTH(a.option_value) > $length
-                      THEN CONCAT(SUBSTRING(a.option_value,1,$length),'…')
-                      ELSE a.option_value
-                    END             AS value,
-                    b.option_value  AS timeout,
-                    {$site_id}      AS site_id,
-                    'options'       AS found_in,
-                    a.autoload      AS autoload,
-                    LENGTH(a.option_id) + LENGTH(a.option_name) + LENGTH(a.option_value) + LENGTH(a.autoload) AS size,
-                    CASE
-                      WHEN CHAR_LENGTH(a.option_value) > $length
-                      THEN TRUE
-                      ELSE FALSE
-                    END             AS is_truncated,
-                    CASE
-                      WHEN b.option_value IS NOT NULL AND b.option_value < UNIX_TIMESTAMP()
-                      THEN 'yes'
-                      ELSE 'no'
-                    END             AS expired
-            FROM    {$wpdb->options} a
-            LEFT JOIN {$wpdb->options} b
-                   ON b.option_name = CONCAT(
-                        '_site_transient_timeout_',
-                        SUBSTRING(a.option_name, CHAR_LENGTH('_site_transient_') + 1)
-                   )
-            WHERE   a.option_name LIKE '\_site\_transient\_%'
-                    AND a.option_name NOT LIKE '\_site\_transient\_timeout\_%'
-        ",
+					SELECT  a.option_name AS name,
+							a.option_id  AS id,
+							SUBSTRING(a.option_value,1,$length) AS value,
+							b.option_value  AS timeout,
+							{$site_id}      AS site_id,
+							'options'       AS found_in,
+							a.autoload      AS autoload,
+							LENGTH(a.option_id) + LENGTH(a.option_name) + LENGTH(a.option_value) + LENGTH(a.autoload) AS size,
+							CASE
+							WHEN b.option_value IS NOT NULL AND b.option_value < UNIX_TIMESTAMP()
+							THEN 'yes'
+							ELSE 'no'
+							END             AS expired
+					FROM    {$wpdb->options} a
+					LEFT JOIN {$wpdb->options} b
+						ON b.option_name = CONCAT(
+								'_site_transient_timeout_',
+								SUBSTRING(a.option_name, CHAR_LENGTH('_site_transient_') + 1)
+						)
+					WHERE   a.option_name LIKE '\_site\_transient\_%'
+							AND a.option_name NOT LIKE '\_site\_transient\_timeout\_%'
+				",
 				'name_col' => 'a.option_name',
 				'value_col' => 'a.option_value',
 			],
@@ -367,37 +341,34 @@ class ADBC_Transients {
 		if ( is_multisite() && is_main_site( $site_id ) ) {
 			$templates[] = [ 
 				'sql' => "
-            SELECT  a.meta_key   AS name,
-                    a.meta_id    AS id,
-                    CASE
-                      WHEN CHAR_LENGTH(a.meta_value) > $length
-                      THEN CONCAT(SUBSTRING(a.meta_value,1,$length),'…')
-                      ELSE a.meta_value
-                    END             AS value,
-                    b.meta_value    AS timeout,
-                    {$site_id}      AS site_id,
-                    'sitemeta'      AS found_in,
-                    'off'           AS autoload,
-                    LENGTH(a.meta_id) + LENGTH(a.meta_key) + LENGTH(a.meta_value) AS size,
-                    CASE
-                      WHEN CHAR_LENGTH(a.meta_value) > $length
-                      THEN TRUE
-                      ELSE FALSE
-                    END             AS is_truncated,
-                    CASE
-                      WHEN b.meta_value IS NOT NULL AND b.meta_value < UNIX_TIMESTAMP()
-                      THEN 'yes'
-                      ELSE 'no'
-                    END             AS expired
-            FROM    {$wpdb->sitemeta} a
-            LEFT JOIN {$wpdb->sitemeta} b
-                   ON b.meta_key = CONCAT(
-                        '_site_transient_timeout_',
-                        SUBSTRING(a.meta_key, CHAR_LENGTH('_site_transient_') + 1)
-                   )
-            WHERE   a.meta_key LIKE '\_site\_transient\_%'
-                    AND a.meta_key NOT LIKE '\_site\_transient\_timeout\_%'
-        ",
+					SELECT  a.meta_key      AS name,
+						a.meta_id       AS id,
+						SUBSTRING(a.meta_value,1,$length) AS value,
+						b.timeout_value AS timeout,
+						{$site_id}      AS site_id,
+						'sitemeta'      AS found_in,
+						'off'           AS autoload,
+						LENGTH(a.meta_id) + LENGTH(a.meta_key) + LENGTH(a.meta_value) AS size,
+						CASE
+						WHEN b.timeout_value IS NOT NULL AND b.timeout_value < UNIX_TIMESTAMP()
+						THEN 'yes'
+						ELSE 'no'
+						END             AS expired
+					FROM    {$wpdb->sitemeta} a
+					LEFT JOIN (
+						SELECT  meta_key,
+								MIN(CAST(meta_value AS UNSIGNED)) AS timeout_value
+						FROM    {$wpdb->sitemeta}
+						WHERE   meta_key LIKE '\_site\_transient\_timeout\_%'
+						GROUP BY meta_key
+					) b
+						ON b.meta_key = CONCAT(
+								'_site_transient_timeout_',
+								SUBSTRING(a.meta_key, CHAR_LENGTH('_site_transient_') + 1)
+						)
+					WHERE   a.meta_key LIKE '\_site\_transient\_%'
+							AND a.meta_key NOT LIKE '\_site\_transient\_timeout\_%'
+				",
 				'name_col' => 'a.meta_key',
 				'value_col' => 'a.meta_value',
 			];
@@ -891,7 +862,29 @@ class ADBC_Transients {
 					} else {
 
 						if ( ! delete_site_transient( $base_name ) ) {
-							$not_processed[] = $selected['name'];
+
+							// fallback to direct delete in sitemeta table
+							// This can happen if the transient have an invalid site ID in sitemeta
+							if ( $found_in === 'sitemeta' ) {
+
+								global $wpdb;
+
+								$timeout_key = "_site_transient_timeout_{$base_name}";
+
+								$sql = "DELETE FROM {$wpdb->sitemeta} WHERE meta_key IN ( %s, %s )";
+
+								$deleted_rows = $wpdb->query(
+									$wpdb->prepare( $sql, $full_name, $timeout_key )
+								);
+
+								if ( $deleted_rows !== false && $deleted_rows === 0 ) {
+									$not_processed[] = $selected['name']; // delete using direct query failed
+								}
+
+							} else { // delete using native wordpress function failed
+								$not_processed[] = $selected['name'];
+							}
+
 						}
 
 					}

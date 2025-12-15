@@ -3,7 +3,7 @@
  * Plugin Name:       Advanced Database Cleaner
  * Plugin URI:        https://sigmaplugin.com/downloads/wordpress-advanced-database-cleaner
  * Description:       The most advanced Database Cleaner for WordPress. Clean database by deleting orphaned items such as old "revisions", "old drafts", optimize database, and more.
- * Version:           4.0.1
+ * Version:           4.0.3
  * Author:            SigmaPlugin
  * Author URI:        https://sigmaplugin.com
  * Contributors:      symptote
@@ -25,7 +25,7 @@ if ( ! defined( "ADBC_MAIN_PLUGIN_FILE_PATH" ) )
 	define( "ADBC_MAIN_PLUGIN_FILE_PATH", __FILE__ );
 
 if ( ! defined( 'ADBC_PLUGIN_VERSION' ) )
-	define( 'ADBC_PLUGIN_VERSION', '4.0.1' );
+	define( 'ADBC_PLUGIN_VERSION', '4.0.3' );
 
 class ADBC_Advanced_DB_Cleaner {
 
@@ -107,6 +107,10 @@ class ADBC_Advanced_DB_Cleaner {
 		// filters
 		add_filter( 'cron_schedules', [ 'ADBC_Admin_Init', 'add_adbc_schedules_frequencies' ] );
 		add_filter( 'load_script_translation_file', [ 'ADBC_Admin_Init', 'change_script_translation_file_name' ], 10, 3 );
+		if ( method_exists( 'ADBC_Admin_Init', '_capture_original_plugin_meta_links' ) && method_exists( 'ADBC_Admin_Init', '_restore_plugin_meta_links' ) ) {
+			add_filter( 'plugin_row_meta', [ 'ADBC_Admin_Init', '_capture_original_plugin_meta_links' ], 1, 2 );
+			add_filter( 'plugin_row_meta', [ 'ADBC_Admin_Init', '_restore_plugin_meta_links' ], 999, 2 );
+		}
 		/* TO-CHECK: Always prioritize plugin's shipped translations over global ones for the pro version
 		 * For the free version we keep it until new version (>=4.0.0) translations are mature in the global repo */
 		add_filter( 'load_textdomain_mofile', [ 'ADBC_Admin_Init', 'prioritize_plugin_translations' ], 10, 2 );

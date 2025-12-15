@@ -43,7 +43,8 @@ abstract class ADBC_Cleanup_Unused_Meta_Handler_Base extends ADBC_Abstract_Clean
 		];
 	}
 	protected function delete_helper() {
-		return fn( $mid ) => delete_metadata_by_mid( $this->meta_type(), $mid );
+		return function ($mid) {
+			return delete_metadata_by_mid( $this->meta_type(), $mid ); };
 	}
 	protected function extra_joins() {
 		return $this->parent_join();
@@ -154,7 +155,7 @@ class ADBC_Cleanup_Unused_Usermeta_Handler extends ADBC_Cleanup_Unused_Meta_Hand
 		return parent::list( $args );
 	}
 
-	public function purge() {
+	protected function purge_native() {
 
 		global $wpdb;
 
@@ -170,8 +171,6 @@ class ADBC_Cleanup_Unused_Usermeta_Handler extends ADBC_Cleanup_Unused_Meta_Hand
 					SELECT main.{$this->pk()}
 					FROM   {$this->table()} main {$this->extra_joins()}
 					WHERE  {$this->base_where()}
-						{$this->keep_days_filter()}
-						{$this->keep_items_filter()}
 					LIMIT  {$chunk}
 				" );
 
@@ -185,6 +184,30 @@ class ADBC_Cleanup_Unused_Usermeta_Handler extends ADBC_Cleanup_Unused_Meta_Hand
 			}
 
 		}
+
+		return $deleted;
+
+	}
+
+	protected function purge_sql() {
+
+		global $wpdb;
+
+		$deleted = 0;
+
+		$sql = "
+			DELETE FROM {$this->table()}
+			WHERE {$this->pk()} IN (
+				SELECT del_id FROM (
+					SELECT main.{$this->pk()} AS del_id
+					FROM   {$this->table()}  AS main
+						   {$this->extra_joins()}
+					WHERE  {$this->base_where()}
+				) AS tmp
+			)
+		";
+
+		$deleted = $wpdb->query( $sql );
 
 		return $deleted;
 
@@ -262,7 +285,8 @@ class ADBC_Cleanup_Oembed_Cache_Meta_Handler extends ADBC_Abstract_Cleanup_Handl
 		];
 	}
 	protected function delete_helper() {
-		return fn( $mid ) => delete_metadata_by_mid( 'post', $mid );
+		return function ($mid) {
+			return delete_metadata_by_mid( 'post', $mid ); };
 	}
 
 }

@@ -98,7 +98,6 @@ class ADBC_Settings_Validator {
 
 		switch ( $key ) {
 			case 'file_lines_batch':
-			case 'database_rows_batch':
 				return ADBC_Common_Validator::is_number_between_min_and_max( $value, self::MIN_FILE_AND_DATABASE_LINES_BATCHES, self::MAX_FILE_AND_DATABASE_LINES_BATCHES );
 			case 'file_content_chunks':
 				return ADBC_Common_Validator::is_number_between_min_and_max( $value, self::MIN_FILE_CONTENT_CHUNKS, self::MAX_FILE_CONTENT_CHUNKS );
@@ -259,6 +258,24 @@ class ADBC_Settings_Validator {
 
 		return true;
 
+	}
+
+	/**
+	 * Checks if the given value is a valid performance settings.
+	 *
+	 * @param string $key The setting key. (not used in this function, but kept for consistency)
+	 * @param array $value The value to check.
+	 * @return bool True if the value is valid, false otherwise.
+	 */
+	public static function is_performance_settings_valid( $key, $value ) {
+		switch ( $key ) {
+			case 'database_rows_batch':
+				return ADBC_Common_Validator::is_number_between_min_and_max( $value, self::MIN_FILE_AND_DATABASE_LINES_BATCHES, self::MAX_FILE_AND_DATABASE_LINES_BATCHES );
+			case 'sql_or_native_cleanup_method':
+				return in_array( $value, [ 'sql', 'native' ], true );
+			default:
+				return false;
+		}
 	}
 
 }

@@ -158,6 +158,12 @@ class ADBC_Tables_Endpoints {
 			// Exclude hardcoded items from selected items.
 			$cleaned_tables = ADBC_Hardcoded_Items::instance()->exclude_hardcoded_items_from_selected_items( $validation_answer, 'tables' );
 
+			if ( ADBC_VERSION_TYPE === 'PREMIUM' )
+				$cleaned_tables = ADBC_Scan_Utils::exclude_r_wp_items_from_selected_items( $cleaned_tables, 'tables' );
+
+			if ( empty( $cleaned_tables ) )
+				return ADBC_Rest::error( __( "Selected tables cannot be deleted because they belong to WordPress.", 'advanced-database-cleaner' ), ADBC_Rest::BAD_REQUEST );
+
 			// Create an array containing only the table names.
 			$tables_names = array_column( $cleaned_tables, 'name' );
 
@@ -203,6 +209,58 @@ class ADBC_Tables_Endpoints {
 
 			return ADBC_Rest::error_for_uncaught_exception( __METHOD__, $e );
 
+		}
+	}
+
+	/**
+	 * Count the total number of tables that are not scanned.
+	 *
+	 * @return WP_REST_Response The response.
+	 */
+	public static function count_total_not_scanned_tables() {
+		try {
+			return ADBC_Rest::success( "", ADBC_Tables::count_total_not_scanned_tables() );
+		} catch (Throwable $e) {
+			return ADBC_Rest::error_for_uncaught_exception( __METHOD__, $e );
+		}
+	}
+
+	/**
+	 * Count the total number of tables that are not repaired.
+	 *
+	 * @return WP_REST_Response The response.
+	 */
+	public static function count_total_tables_to_repair() {
+		try {
+			return ADBC_Rest::success( "", ADBC_Tables::count_total_tables_to_repair() );
+		} catch (Throwable $e) {
+			return ADBC_Rest::error_for_uncaught_exception( __METHOD__, $e );
+		}
+	}
+
+	/**
+	 * Count the total number of tables that are not optimized.
+	 *
+	 * @return WP_REST_Response The response.
+	 */
+	public static function count_total_tables_to_optimize() {
+		try {
+			return ADBC_Rest::success( "", ADBC_Tables::count_total_tables_to_optimize() );
+		} catch (Throwable $e) {
+			return ADBC_Rest::error_for_uncaught_exception( __METHOD__, $e );
+		}
+	}
+
+	/**
+	 * Count the total number of tables that have invalid prefix.
+	 *
+	 * @return WP_REST_Response The response.
+	 */
+	public static function count_total_tables_with_invalid_prefix() {
+		try {
+			return ADBC_Rest::success( "", ADBC_Tables::get_total_tables_with_invalid_prefix_count() );
+		} catch (Throwable $e) {
+			return ADBC_Rest::error_for_uncaught_exception( __METHOD__, $e );
 		}
 	}
 

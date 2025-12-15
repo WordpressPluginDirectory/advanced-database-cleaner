@@ -29,30 +29,50 @@ class ADBC_Routes {
 		self::register_route( '/repair-tables', 'repair_tables', WP_REST_Server::EDITABLE, ADBC_Tables_Endpoints::class);
 		self::register_route( '/empty-rows-tables', 'empty_rows_tables', WP_REST_Server::EDITABLE, ADBC_Tables_Endpoints::class);
 		self::register_route( '/delete-tables', 'delete_tables', WP_REST_Server::EDITABLE, ADBC_Tables_Endpoints::class);
+		self::register_route( '/count-total-not-scanned-tables', 'count_total_not_scanned_tables', WP_REST_Server::READABLE, ADBC_Tables_Endpoints::class);
+		self::register_route( '/count-total-tables-to-optimize', 'count_total_tables_to_optimize', WP_REST_Server::READABLE, ADBC_Tables_Endpoints::class);
+		self::register_route( '/count-total-tables-to-repair', 'count_total_tables_to_repair', WP_REST_Server::READABLE, ADBC_Tables_Endpoints::class);
+		self::register_route( '/count-total-tables-with-invalid-prefix', 'count_total_tables_with_invalid_prefix', WP_REST_Server::READABLE, ADBC_Tables_Endpoints::class);
 
 		// Options routes.
 		self::register_route( '/get-options-list', 'get_options_list', WP_REST_Server::EDITABLE, ADBC_Options_Endpoints::class);
 		self::register_route( '/set-autoload-to-yes-options', 'set_autoload_to_yes_options', WP_REST_Server::EDITABLE, ADBC_Options_Endpoints::class);
 		self::register_route( '/set-autoload-to-no-options', 'set_autoload_to_no_options', WP_REST_Server::EDITABLE, ADBC_Options_Endpoints::class);
 		self::register_route( '/delete-options', 'delete_options', WP_REST_Server::EDITABLE, ADBC_Options_Endpoints::class);
+		self::register_route( '/count-big-options', 'count_big_options', WP_REST_Server::READABLE, ADBC_Options_Endpoints::class);
+		self::register_route( '/count-total-not-scanned-options', 'count_total_not_scanned_options', WP_REST_Server::READABLE, ADBC_Options_Endpoints::class);
+		self::register_route( '/get-autoload-health', 'get_autoload_health', WP_REST_Server::READABLE, ADBC_Options_Endpoints::class);
 
 		// Transients routes.
 		self::register_route( '/get-transients-list', 'get_transients_list', WP_REST_Server::EDITABLE, ADBC_Transients_Endpoints::class);
 		self::register_route( '/set-autoload-to-yes-transients', 'set_autoload_to_yes_transients', WP_REST_Server::EDITABLE, ADBC_Transients_Endpoints::class);
 		self::register_route( '/set-autoload-to-no-transients', 'set_autoload_to_no_transients', WP_REST_Server::EDITABLE, ADBC_Transients_Endpoints::class);
 		self::register_route( '/delete-transients', 'delete_transients', WP_REST_Server::EDITABLE, ADBC_Transients_Endpoints::class);
+		self::register_route( '/count-big-transients', 'count_big_transients', WP_REST_Server::READABLE, ADBC_Transients_Endpoints::class);
+		self::register_route( '/count-total-not-scanned-transients', 'count_total_not_scanned_transients', WP_REST_Server::READABLE, ADBC_Transients_Endpoints::class);
+		self::register_route( '/count-expired-transients', 'count_expired_transients', WP_REST_Server::READABLE, ADBC_Transients_Endpoints::class);
 
 		// Posts_meta routes.
 		self::register_route( '/get-posts-meta-list', 'get_posts_meta_list', WP_REST_Server::EDITABLE, ADBC_Posts_Meta_Endpoints::class);
 		self::register_route( '/delete-posts-meta', 'delete_posts_meta', WP_REST_Server::EDITABLE, ADBC_Posts_Meta_Endpoints::class);
+		self::register_route( '/count-big-posts-meta', 'count_big_posts_meta', WP_REST_Server::READABLE, ADBC_Posts_Meta_Endpoints::class);
+		self::register_route( '/count-total-not-scanned-posts-meta', 'count_total_not_scanned_posts_meta', WP_REST_Server::READABLE, ADBC_Posts_Meta_Endpoints::class);
+		self::register_route( '/count-duplicated-posts-meta', 'count_duplicated_posts_meta', WP_REST_Server::READABLE, ADBC_Posts_Meta_Endpoints::class);
+		self::register_route( '/count-unused-posts-meta', 'count_unused_posts_meta', WP_REST_Server::READABLE, ADBC_Posts_Meta_Endpoints::class);
 
 		// Users_meta routes.
 		self::register_route( '/get-users-meta-list', 'get_users_meta_list', WP_REST_Server::EDITABLE, ADBC_Users_Meta_Endpoints::class);
 		self::register_route( '/delete-users-meta', 'delete_users_meta', WP_REST_Server::EDITABLE, ADBC_Users_Meta_Endpoints::class);
+		self::register_route( '/count-big-users-meta', 'count_big_users_meta', WP_REST_Server::READABLE, ADBC_Users_Meta_Endpoints::class);
+		self::register_route( '/count-total-not-scanned-users-meta', 'count_total_not_scanned_users_meta', WP_REST_Server::READABLE, ADBC_Users_Meta_Endpoints::class);
+		self::register_route( '/count-duplicated-users-meta', 'count_duplicated_users_meta', WP_REST_Server::READABLE, ADBC_Users_Meta_Endpoints::class);
+		self::register_route( '/count-unused-users-meta', 'count_unused_users_meta', WP_REST_Server::READABLE, ADBC_Users_Meta_Endpoints::class);
 
 		// Cron_jobs routes.
 		self::register_route( '/get-cron-jobs-list', 'get_cron_jobs_list', WP_REST_Server::EDITABLE, ADBC_Cron_Jobs_Endpoints::class);
 		self::register_route( '/delete-cron-jobs', 'delete_cron_jobs', WP_REST_Server::EDITABLE, ADBC_Cron_Jobs_Endpoints::class);
+		self::register_route( '/count-total-not-scanned-cron-jobs', 'count_total_not_scanned_cron_jobs', WP_REST_Server::READABLE, ADBC_Cron_Jobs_Endpoints::class);
+		self::register_route( '/count-total-cron-jobs-with-no-action', 'count_total_cron_jobs_with_no_action', WP_REST_Server::READABLE, ADBC_Cron_Jobs_Endpoints::class);
 
 		// Common routes.
 		self::register_route( '/get-column-value-from-table', 'get_column_value_from_table', WP_REST_Server::EDITABLE, ADBC_Common_Endpoints::class);

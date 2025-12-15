@@ -473,8 +473,12 @@ class ADBC_Migration {
 			}
 		}
 
-		$number_of_successes = count( array_filter( $results, fn( $result ) => $result === 1 ) );
-		$number_of_failures = count( array_filter( $results, fn( $result ) => $result === 0 ) );
+		$number_of_successes = count( array_filter( $results, function ($result) {
+			return $result === 1;
+		} ) );
+		$number_of_failures = count( array_filter( $results, function ($result) {
+			return $result === 0;
+		} ) );
 
 		// If there are no results or all results are failures, return 0
 		if ( empty( $results ) || ( $number_of_failures === count( $results ) ) )
@@ -546,8 +550,12 @@ class ADBC_Migration {
 		// Remove the old version data from the database.
 		self::delete_old_free_version_data();
 
-		$number_of_successes = count( array_filter( $final_success, fn( $result ) => $result === 1 ) );
-		$number_of_failures = count( array_filter( $final_success, fn( $result ) => $result === 0 ) );
+		$number_of_successes = count( array_filter( $final_success, function ($result) {
+			return $result === 1;
+		} ) );
+		$number_of_failures = count( array_filter( $final_success, function ($result) {
+			return $result === 0;
+		} ) );
 
 		// If there are no results or all results are failures, return 0
 		if ( empty( $final_success ) || ( $number_of_failures === count( $plugins_files ) ) )

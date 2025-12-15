@@ -73,6 +73,12 @@ class ADBC_Users_Meta_Endpoints {
 
 			$cleaned_users_meta = ADBC_Hardcoded_Items::instance()->exclude_hardcoded_items_from_selected_items( $validation_answer, 'users_meta', "wp" );
 
+			if ( ADBC_VERSION_TYPE === 'PREMIUM' )
+				$cleaned_users_meta = ADBC_Scan_Utils::exclude_r_wp_items_from_selected_items( $cleaned_users_meta, 'users_meta' );
+
+			if ( empty( $cleaned_users_meta ) )
+				return ADBC_Rest::error( __( "Selected user meta cannot be deleted because they belong to WordPress.", 'advanced-database-cleaner' ), ADBC_Rest::BAD_REQUEST );
+
 			$not_processed = ADBC_Users_Meta::delete_users_meta( $cleaned_users_meta );
 
 			// Delete the users meta from the scan results
@@ -87,6 +93,58 @@ class ADBC_Users_Meta_Endpoints {
 
 			return ADBC_Rest::error_for_uncaught_exception( __METHOD__, $e );
 
+		}
+	}
+
+	/**
+	 * Count the total number of big users meta in all sites.
+	 *
+	 * @return WP_REST_Response The response.
+	 */
+	public static function count_big_users_meta() {
+		try {
+			return ADBC_Rest::success( "", ADBC_Users_Meta::count_big_users_meta() );
+		} catch (Throwable $e) {
+			return ADBC_Rest::error_for_uncaught_exception( __METHOD__, $e );
+		}
+	}
+
+	/**
+	 * Count the total number of users meta that are not scanned.
+	 *
+	 * @return WP_REST_Response The response.
+	 */
+	public static function count_total_not_scanned_users_meta() {
+		try {
+			return ADBC_Rest::success( "", ADBC_Users_Meta::count_total_not_scanned_users_meta() );
+		} catch (Throwable $e) {
+			return ADBC_Rest::error_for_uncaught_exception( __METHOD__, $e );
+		}
+	}
+
+	/**
+	 * Count the total number of duplicated users meta.
+	 *
+	 * @return WP_REST_Response The response.
+	 */
+	public static function count_duplicated_users_meta() {
+		try {
+			return ADBC_Rest::success( "", ADBC_Users_Meta::count_duplicated_users_meta() );
+		} catch (Throwable $e) {
+			return ADBC_Rest::error_for_uncaught_exception( __METHOD__, $e );
+		}
+	}
+
+	/**
+	 * Count the total number of unused users meta.
+	 *
+	 * @return WP_REST_Response The response.
+	 */
+	public static function count_unused_users_meta() {
+		try {
+			return ADBC_Rest::success( "", ADBC_Users_Meta::count_unused_users_meta() );
+		} catch (Throwable $e) {
+			return ADBC_Rest::error_for_uncaught_exception( __METHOD__, $e );
 		}
 	}
 

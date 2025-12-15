@@ -28,10 +28,6 @@ class ADBC_Options {
 		$options_list = [];
 		$total_options = 0;
 
-		$autoloaded_size = self::count_autoload_size_using_sql();
-		$big_options_count = self::count_big_options();
-		$not_scanned_count = self::count_total_not_scanned_options();
-
 		$scan_counter = new ADBC_Scan_Counter();
 
 		$startRecord = ( $filters['current_page'] - 1 ) * $filters['items_per_page'];
@@ -77,7 +73,6 @@ class ADBC_Options {
 						'name' => $option->name, // Used in the known addons modal & "show value modal". To be generic and work for all items types.
 						'option_name' => $option->name,
 						'value' => $option->value,
-						'is_truncated' => $option->is_truncated,
 						'size' => $option->size,
 						'autoload' => $option->autoload,
 						'site_id' => $option->site_id,
@@ -106,10 +101,6 @@ class ADBC_Options {
 			'items' => $options_list,
 			'total_items' => $total_options,
 			'real_current_page' => min( $filters['current_page'], $total_real_pages ),
-			'autoloaded_size' => ADBC_Common_Utils::format_bytes( $autoloaded_size ),
-			'autoload_health' => $autoloaded_size > self::AUTOLOAD_THRESHOLD_WARNING ? 'bad' : 'good',
-			'big_options_count' => $big_options_count,
-			'not_scanned_count' => $not_scanned_count,
 			'categorization_count' => $scan_counter->get_categorization_count(),
 			'plugins_count' => $scan_counter->get_plugins_count(),
 			'themes_count' => $scan_counter->get_themes_count(),
@@ -120,8 +111,8 @@ class ADBC_Options {
 	 * Get the options list that satisfy the UI filters.
 	 *
 	 * @param array $filters Output of sanitize_filters().
-	 * @param int $limit Limit for the number of rows to return.
-	 * @param int $offset Offset for the number of rows to return.
+	 * @param int   $limit   Limit for the number of rows to return.
+	 * @param int   $offset  Offset for the number of rows to return.
 	 *
 	 * @return array List of options that satisfy the filters.
 	 */
@@ -129,7 +120,7 @@ class ADBC_Options {
 
 		global $wpdb;
 		$sites_list = ADBC_Sites::instance()->get_sites_list( $filters['site_id'] );
-		$union_queries = [];
+		$is_single_site_query = ( count( $sites_list ) === 1 );
 
 		/* ──────────────────────────────────────────────────────────────
 		 * Build a safe ORDER BY clause
@@ -143,7 +134,7 @@ class ADBC_Options {
 
 		$sort_col = $filters['sort_by'] ?? '';
 		$sort_dir = strtoupper( $filters['sort_order'] ?? 'ASC' );
-		$sort_dir = $sort_dir === 'DESC' ? 'DESC' : 'ASC';
+		$sort_dir = ( $sort_dir === 'DESC' ) ? 'DESC' : 'ASC';
 
 		// Add 'order by' clause if the column is allowed.
 		$order_by_sql = isset( $allowed_columns[ $sort_col ] )
@@ -151,14 +142,43 @@ class ADBC_Options {
 			: '';
 
 		/* ──────────────────────────────────────────────────────────────
-		 * Loop through all sites and prepare the SQL for each site
+		 * Single-site path (no UNION, no derived table)
 		 * ─────────────────────────────────────────────────────────────*/
+		if ( $is_single_site_query ) {
+
+			$site = reset( $sites_list );
+			$table_name = $site['prefix'] . 'options';
+			$site_id = $site['id'];
+
+			$sql = self::prepare_options_list_sql_for_single_site(
+				$site_id,
+				$table_name,
+				$filters,
+				$order_by_sql,
+				$limit,
+				$offset
+			);
+
+			return $wpdb->get_results( $sql, OBJECT );
+		}
+
+		/* ──────────────────────────────────────────────────────────────
+		 * Multisite path (UNION across all sites)
+		 * ─────────────────────────────────────────────────────────────*/
+		$union_queries = [];
+
 		// Offset starts from 0, so we need to add the limit to it to increment the number of rows to fetch in each iteration.
 		$total_rows_to_fetch = $offset + $limit;
 		foreach ( $sites_list as $site ) {
-			$table_name = $site['prefix'] . "options"; // Get the options table name for the current site
+			$table_name = $site['prefix'] . 'options'; // Get the options table name for the current site
 			$site_id = $site['id']; // Get the site ID for the current site
-			$union_queries[] = self::prepare_options_list_sql_for_union( $site_id, $table_name, $filters, $order_by_sql, $total_rows_to_fetch );
+			$union_queries[] = self::prepare_options_list_sql_for_union(
+				$site_id,
+				$table_name,
+				$filters,
+				$order_by_sql,
+				$total_rows_to_fetch
+			);
 		}
 
 		$union_sql = implode( "\nUNION ALL\n", $union_queries );
@@ -175,6 +195,116 @@ class ADBC_Options {
 
 		return $wpdb->get_results( $sql, OBJECT );
 	}
+
+	/**
+	 * Prepare a SQL query string to get the options list for a single site
+	 * (no UNION, no derived table).
+	 *
+	 * @param int    $site_id      Site ID to query.
+	 * @param string $table_name   Options table name to query.
+	 * @param array  $filters      Output of sanitize_filters().
+	 * @param string $order_by_sql SQL query clause to order the results.
+	 * @param int    $limit        Limit for the number of rows to return.
+	 * @param int    $offset       Offset for the number of rows to return.
+	 *
+	 * @return string SQL query to get the options list for a single site.
+	 */
+	private static function prepare_options_list_sql_for_single_site( $site_id, $table_name, $filters, $order_by_sql, $limit, $offset ) {
+
+		global $wpdb;
+
+		$truncate_length = self::TRUNCATE_LENGTH;
+		$autoloaded_values = self::get_values_to_autoload();
+
+		$params = [ absint( $site_id ) ]; // %d for site_id in SELECT
+
+		/* ──────────────────────────────────────────────────────────────
+		 * Assemble the dynamic WHERE parts
+		 * ─────────────────────────────────────────────────────────────*/
+		$where = [ 
+			'`option_name` NOT LIKE %s',   // skip transients
+			'`option_name` NOT LIKE %s',   // skip site transients
+		];
+
+		$params[] = '\_transient\_%';
+		$params[] = '\_site\_transient\_%';
+
+		/* — Autoload filter — */
+		if ( isset( $filters['autoload'] ) && $filters['autoload'] !== 'all' && ! empty( $autoloaded_values ) ) {
+
+			$placeholders = implode( ',', array_fill( 0, count( $autoloaded_values ), '%s' ) );
+
+			if ( $filters['autoload'] === 'yes' ) {
+				$where[] = "`autoload` IN ($placeholders)";
+			} else {
+				$where[] = "`autoload` NOT IN ($placeholders)";
+			}
+
+			$params = array_merge( $params, $autoloaded_values );
+		}
+
+		/* — Size ≥ threshold — */
+		if ( ! empty( $filters['size'] ) && (int) $filters['size'] > 0 ) {
+			$bytes = ADBC_Common_Utils::convert_size_to_bytes(
+				$filters['size'],
+				$filters['size_unit']
+			);
+			$where[] = 'OCTET_LENGTH(`option_value`) >= %d';
+			$params[] = $bytes;
+		}
+
+		/* — Search filter — */
+		if ( ! empty( $filters['search_for'] ) && ! empty( $filters['search_in'] ) ) {
+
+			$needle = '%' . $wpdb->esc_like( $filters['search_for'] ) . '%';
+
+			switch ( $filters['search_in'] ) {
+				case 'name':
+					$where[] = '`option_name` LIKE %s';
+					$params[] = $needle;
+					break;
+
+				case 'value':
+					$where[] = '`option_value` LIKE %s';
+					$params[] = $needle;
+					break;
+
+				case 'all':
+					$where[] = '(`option_name` LIKE %s OR `option_value` LIKE %s)';
+					$params[] = $needle; // for option_name
+					$params[] = $needle; // for option_value
+					break;
+			}
+		}
+
+		$where_sql = 'WHERE ' . implode( ' AND ', $where );
+
+		// Add limit & offset at the end of the params array
+		$params[] = absint( $limit );
+		$params[] = absint( $offset );
+
+		/* ──────────────────────────────────────────────────────────────
+		 * Final SQL
+		 * ─────────────────────────────────────────────────────────────*/
+		$sql = $wpdb->prepare(
+			"SELECT
+				`option_name`                           AS name,
+				`option_id`                             AS option_id,
+				SUBSTRING(`option_value`, 1, {$truncate_length}) AS value,
+				`autoload`                              AS autoload,
+				OCTET_LENGTH(`option_value`)            AS size,
+				%d                                      AS site_id
+			FROM {$table_name}
+			{$where_sql}
+			{$order_by_sql}
+			LIMIT %d OFFSET %d
+			",
+			...$params
+		);
+
+		return $sql;
+	}
+
 
 	/**
 	 * Prepare a SQL query string to get the options list that satisfy the UI filters. It will be used in a UNION query to get all options in all sites.
@@ -195,7 +325,7 @@ class ADBC_Options {
 		$params = [ absint( $site_id ) ];  // Place the site_id at the beginning of the params array
 
 		/* ──────────────────────────────────────────────────────────────
-		 * 2. Assemble the dynamic WHERE parts
+		 * Assemble the dynamic WHERE parts
 		 * ─────────────────────────────────────────────────────────────*/
 		$where = [ 
 			'`option_name` NOT LIKE %s',   // skip site transients
@@ -204,6 +334,29 @@ class ADBC_Options {
 
 		$params[] = '\_transient\_%';
 		$params[] = '\_site\_transient\_%';
+
+		/* — Autoload filter — */
+		if ( isset( $filters['autoload'] ) && $filters['autoload'] !== 'all' ) {
+			$placeholders = implode( ',', array_fill( 0, count( $autoloaded_values ), '%s' ) );
+
+			if ( $filters['autoload'] === 'yes' ) {
+				$where[] = "`autoload` IN ($placeholders)";
+			} else {
+				$where[] = "`autoload` NOT IN ($placeholders)";
+			}
+
+			$params = array_merge( $params, $autoloaded_values );
+		}
+
+		/* — Size ≥ threshold — */
+		if ( ! empty( $filters['size'] ) && (int) $filters['size'] > 0 ) {
+			$bytes = ADBC_Common_Utils::convert_size_to_bytes(
+				$filters['size'],
+				$filters['size_unit']
+			);
+			$where[] = 'OCTET_LENGTH(`option_value`) >= %d';
+			$params[] = $bytes;
+		}
 
 		/* — Search filter — */
 		if ( ! empty( $filters['search_for'] ) && ! empty( $filters['search_in'] ) ) {
@@ -230,29 +383,6 @@ class ADBC_Options {
 			}
 		}
 
-		/* — Autoload filter — */
-		if ( isset( $filters['autoload'] ) && $filters['autoload'] !== 'all' ) {
-			$placeholders = implode( ',', array_fill( 0, count( $autoloaded_values ), '%s' ) );
-
-			if ( $filters['autoload'] === 'yes' ) {
-				$where[] = "`autoload` IN ($placeholders)";
-			} else {
-				$where[] = "`autoload` NOT IN ($placeholders)";
-			}
-
-			$params = array_merge( $params, $autoloaded_values );
-		}
-
-		/* — Size ≥ threshold — */
-		if ( ! empty( $filters['size'] ) && (int) $filters['size'] > 0 ) {
-			$bytes = ADBC_Common_Utils::convert_size_to_bytes(
-				$filters['size'],
-				$filters['size_unit']
-			);
-			$where[] = 'OCTET_LENGTH(`option_value`) >= %d';
-			$params[] = $bytes;
-		}
-
 		$where_sql = 'WHERE ' . implode( ' AND ', $where );
 		$params[] = absint( $total_rows_to_fetch ); // Add the limit to the params array
 
@@ -263,16 +393,7 @@ class ADBC_Options {
 			"SELECT
 				`option_name`                      AS name,
 				`option_id`                        AS option_id,
-				CASE
-					WHEN CHAR_LENGTH(`option_value`) > $truncate_length
-					THEN SUBSTRING(`option_value`, 1, $truncate_length)
-					ELSE `option_value`
-				END                                AS value,
-				CASE
-					WHEN CHAR_LENGTH(`option_value`) > $truncate_length
-					THEN 1
-					ELSE 0
-				END             				   AS is_truncated,
+				SUBSTRING(`option_value`, 1, $truncate_length) AS value,
 				`autoload`                         AS autoload,
 				OCTET_LENGTH(`option_value`)       AS size,
 				%d						   		   AS site_id
@@ -288,9 +409,9 @@ class ADBC_Options {
 	}
 
 	/**
-	 * Get the size of all autoloaded options in the wp_options table.
+	 * Count the size of all autoloaded options in the wp_options table.
 	 * 
-	 * @return int Autoloaded options size.
+	 * @return array [ 'autoloaded_size' => string, 'autoload_health' => string (good/bad) ]
 	 */
 	public static function count_autoload_size_using_sql() {
 
@@ -315,7 +436,13 @@ class ADBC_Options {
 			...$autoload_values
 		);
 
-		return (int) $wpdb->get_var( $sql );
+		$autoloaded_size = (int) $wpdb->get_var( $sql );
+		$autoload_health = $autoloaded_size > self::AUTOLOAD_THRESHOLD_WARNING ? 'bad' : 'good';
+
+		return [ 
+			'autoloaded_size' => ADBC_Common_Utils::format_bytes( $autoloaded_size ),
+			'autoload_health' => $autoload_health,
+		];
 	}
 
 	/**

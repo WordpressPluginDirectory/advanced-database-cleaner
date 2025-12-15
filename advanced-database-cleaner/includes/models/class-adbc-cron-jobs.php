@@ -103,9 +103,6 @@ class ADBC_Cron_Jobs {
 		$cron_jobs_list = [];
 		$total_cron_jobs = 0;
 
-		$not_scanned_count = self::count_total_not_scanned_cron_jobs();
-		$no_action_count = self::count_total_cron_jobs_with_no_action();
-
 		$scan_counter = new ADBC_Scan_Counter();
 
 		$startRecord = ( $filters['current_page'] - 1 ) * $filters['items_per_page'];
@@ -184,8 +181,6 @@ class ADBC_Cron_Jobs {
 			'items' => $cron_jobs_list,
 			'total_items' => $total_cron_jobs,
 			'real_current_page' => min( $filters['current_page'], $total_real_pages ),
-			'not_scanned_count' => $not_scanned_count,
-			'no_action_count' => $no_action_count,
 			'categorization_count' => $scan_counter->get_categorization_count(),
 			'plugins_count' => $scan_counter->get_plugins_count(),
 			'themes_count' => $scan_counter->get_themes_count(),

@@ -275,29 +275,8 @@ abstract class ADBC_Abstract_Cleanup_Handler implements ADBC_Cleanup_Type_Handle
 	 * @return string
 	 */
 	private function truncated_value() {
-
 		$length = self::TRUNCATE_LENGTH;
-
-		$truncated_value_expression = "
-			CASE WHEN CHAR_LENGTH(main.{$this->value_column()}) > {$length}
-				THEN SUBSTRING(main.{$this->value_column()},1,{$length})
-				ELSE main.{$this->value_column()}
-			END
-			";
-
-		return $truncated_value_expression;
-
-	}
-
-	/**
-	 * Returns the SQL condition to check if the value column is truncated.
-	 * This is used to indicate if the value is too long to be displayed fully.
-	 *
-	 * @return string
-	 */
-	private function is_truncated() {
-		$length = self::TRUNCATE_LENGTH;
-		return "CHAR_LENGTH(main.{$this->value_column()}) > {$length}";
+		return "SUBSTRING(main.{$this->value_column()},1,{$length})";
 	}
 
 	/**
@@ -337,7 +316,6 @@ abstract class ADBC_Abstract_Cleanup_Handler implements ADBC_Cleanup_Type_Handle
 		$columns[] = "main.{$this->pk()}";
 		$columns[] = "main.{$this->name_column()}";
 		$columns[] = "{$this->truncated_value()} AS {$this->value_column()}";
-		$columns[] = "{$this->is_truncated()} AS is_truncated";
 		$columns[] = "{$this->size_expression()} AS size";
 		$columns[] = "{$site_id} AS site_id";
 		$columns = array_merge( $columns, $this->extra_select() ); // extra select columns
@@ -498,7 +476,7 @@ abstract class ADBC_Abstract_Cleanup_Handler implements ADBC_Cleanup_Type_Handle
 	 * Counts the total number of items and their total size across all sites.
 	 * This method is used to get the count without any filters.
 	 * 
-	 * @return array{count, size}
+	 * @return array{"count"=>int, "size"=>int}
 	 */
 	public function count() {
 		return $this->count_filtered();
@@ -510,7 +488,7 @@ abstract class ADBC_Abstract_Cleanup_Handler implements ADBC_Cleanup_Type_Handle
 	 * 
 	 * @param array|null $args Optional arguments to filter the count, otherwise counts all items.
 	 * 
-	 * @return array{count, size}
+	 * @return array{"count"=>int, "size"=>int}
 	 */
 	public function count_filtered( $args = [] ) {
 
@@ -580,16 +558,36 @@ abstract class ADBC_Abstract_Cleanup_Handler implements ADBC_Cleanup_Type_Handle
 		$sort_col = $args['sort_by'];
 		$sort_dir = $args['sort_order'];
 
-		$apply_sort = in_array( $sort_col, $this->sortable_columns() ) && (
-			( $args['site_id'] === 'all' && $this->is_all_sites_sortable() ) || ( $args['site_id'] !== 'all' )
+		$apply_sort = in_array( $sort_col, $this->sortable_columns(), true ) && (
+			( $site_arg === 'all' && $this->is_all_sites_sortable() ) || ( $site_arg !== 'all' )
 		);
 		$maybe_order_by = $apply_sort ? "ORDER BY {$sort_col} {$sort_dir}" : '';
 
-		$branch_batch_size = $offset + $per_page;
+		// Resolve sites once.
+		$sites = ADBC_Sites::instance()->get_sites_list( $site_arg );
 
-		// ---- Build branches ---------------------------------------------
+		// ── Single-site fast path ────────────────────────────────────
+		if ( count( $sites ) === 1 ) {
+
+			$site = reset( $sites );
+
+			$rows = $this->list_single_site_rows(
+				$site['id'],
+				$args,
+				$per_page,
+				$offset,
+				$maybe_order_by
+			);
+
+			return $this->add_composite_id( $rows );
+		}
+
+		// ── Multi-site path (UNION over branches) ────────────────────────────
+
+		$branch_batch_size = $offset + $per_page;
 		$branches = [];
-		foreach ( ADBC_Sites::instance()->get_sites_list( $site_arg ) as $site ) {
+
+		foreach ( $sites as $site ) {
 
 			ADBC_Sites::instance()->switch_to_blog_id( $site['id'] );
 
@@ -610,7 +608,10 @@ abstract class ADBC_Abstract_Cleanup_Handler implements ADBC_Cleanup_Type_Handle
 			);
 
 			ADBC_Sites::instance()->restore_blog();
+		}
 
+		if ( empty( $branches ) ) {
+			return [];
 		}
 
 		$union_sql = implode( "\nUNION ALL\n", $branches );
@@ -631,14 +632,107 @@ abstract class ADBC_Abstract_Cleanup_Handler implements ADBC_Cleanup_Type_Handle
 	}
 
 	/**
+	 * Lists items for a single site (no UNION/derived table).
+	 *
+	 * @param int    $site_id       Site ID.
+	 * @param array  $args          Filter / paging args.
+	 * @param int    $per_page      Items per page.
+	 * @param int    $offset        Offset for LIMIT/OFFSET.
+	 * @param string $maybe_order_by Already validated ORDER BY clause or ''.
+	 *
+	 * @return array Raw rows (ARRAY_A) without composite_id; caller can decorate.
+	 */
+	protected function list_single_site_rows( $site_id, $args, $per_page, $offset, $maybe_order_by ) {
+
+		global $wpdb;
+
+		ADBC_Sites::instance()->switch_to_blog_id( $site_id );
+
+		// Make sure the tables exists in this blog
+		if ( ! ADBC_Tables::is_table_exists( $this->table() ) ) {
+			ADBC_Sites::instance()->restore_blog();
+			return [];
+		}
+
+		// Build select columns
+		$columns = [];
+		$columns[] = "main.{$this->pk()}";
+		$columns[] = "main.{$this->name_column()}";
+		$columns[] = "{$this->truncated_value()} AS {$this->value_column()}";
+		$columns[] = "{$this->size_expression()} AS size";
+		$columns[] = "{$site_id} AS site_id";
+		$columns = array_merge( $columns, $this->extra_select() );
+
+		$select_columns = implode( ', ', $columns );
+
+		$sql = "
+			SELECT {$select_columns}
+			FROM   {$this->table()} main
+				   {$this->extra_joins()}
+			WHERE  {$this->base_where()}
+				   {$this->keep_days_filter()}
+				   {$this->keep_items_filter()}
+				   {$this->search_filter( $args )}
+				   {$this->date_filter( $args )}
+				   {$this->size_filter( $args )}
+			{$maybe_order_by}
+			LIMIT %d OFFSET %d
+		";
+
+		$sql = $wpdb->prepare( $sql, $per_page, $offset );
+		$rows = $wpdb->get_results( $sql, ARRAY_A );
+
+		ADBC_Sites::instance()->restore_blog();
+
+		return $rows;
+	}
+
+	/**
+	 * Purges all items of this type across all sites.
+	 * This method deletes all items that match the base WHERE clause and the keep last rules.
+	 * This method purges the items using either native or SQL method depending on the settings.
+	 * 
+	 * @return int The number of deleted items.
+	 */
+	public function purge() {
+
+		$cleanup_method = ADBC_Settings::instance()->get_setting( 'sql_or_native_cleanup_method' );
+
+		if ( $cleanup_method === 'native' )
+			return $this->purge_native();
+		else
+			return $this->purge_sql();
+
+	}
+
+	/**
 	 * Deletes the specified items across all sites.
 	 * The items should be an array of arrays with 'site_id' and 'id' keys.
+	 * This method deletes the items using either native or SQL method depending on the settings.
 	 * 
 	 * @param array $items The items to delete, each item should have 'site_id' and 'id'.
 	 * 
 	 * @return int The number of affected rows.
 	 */
 	public function delete( $items ) {
+
+		$cleanup_method = ADBC_Settings::instance()->get_setting( 'sql_or_native_cleanup_method' );
+
+		if ( $cleanup_method === 'native' )
+			return $this->delete_native( $items );
+		else
+			return $this->delete_sql( $items );
+
+	}
+
+	/**
+	 * Deletes the specified items using the wordpress native delete helper function.
+	 *
+	 * @param array $items The items to delete, each item should have 'site_id' and 'id'.
+	 * 
+	 * @return int The number of affected rows.
+	 */
+	protected function delete_native( $items ) {
 
 		if ( empty( $items ) )
 			return 0;
@@ -677,14 +771,60 @@ abstract class ADBC_Abstract_Cleanup_Handler implements ADBC_Cleanup_Type_Handle
 	}
 
 	/**
-	 * Purges all items of this type across all sites.
+	 * Deletes the specified items using direct SQL queries.
+	 *
+	 * @param array $items The items to delete, each item should have 'site_id' and 'id'.
+	 * 
+	 * @return int The number of affected rows.
+	 */
+	protected function delete_sql( $items ) {
+
+		global $wpdb;
+
+		if ( empty( $items ) )
+			return 0;
+
+		$by_site = [];
+
+		foreach ( $items as $item ) {
+			$by_site[ $item['site_id'] ][] = $item['id'];
+		}
+
+		$affected = 0;
+
+		foreach ( $by_site as $site_id => $ids ) {
+
+			ADBC_Sites::instance()->switch_to_blog_id( $site_id );
+
+			$placeholders = implode( ',', array_fill( 0, count( $ids ), '%d' ) );
+
+			$sql = "DELETE FROM {$this->table()} main
+					WHERE {$this->pk()} IN ( $placeholders )";
+
+			$sql = $wpdb->prepare( $sql, ...$ids );
+
+			$affected += $wpdb->query( $sql );
+
+			ADBC_Sites::instance()->restore_blog();
+
+		}
+
+		return $affected;
+
+	}
+
+	/**
+	 * Purges all items of this type across all sites using wordpress native delete helper.
 	 * This method deletes all items that match the base WHERE clause and the keep last rules.
 	 * 
 	 * @return int The number of deleted items.
 	 */
-	public function purge() {
+	protected function purge_native() {
 
 		global $wpdb;
+
+		$keep_days_sql = $this->keep_days_filter();
+		$keep_items_sql = $this->keep_items_filter();
 
 		$helper = $this->delete_helper();
 		$tail = $this->delete_helper_tail_args();
@@ -708,8 +848,8 @@ abstract class ADBC_Abstract_Cleanup_Handler implements ADBC_Cleanup_Type_Handle
 					SELECT main.{$this->pk()}
 					FROM   {$this->table()} main {$this->extra_joins()}
 					WHERE  {$this->base_where()}
-						{$this->keep_days_filter()}
-						{$this->keep_items_filter()}
+						   {$keep_days_sql}
+						   {$keep_items_sql}
 					LIMIT  {$chunk}
 				" );
 
@@ -733,13 +873,57 @@ abstract class ADBC_Abstract_Cleanup_Handler implements ADBC_Cleanup_Type_Handle
 	}
 
 	/**
+	 * Purges all items of this type across all sites using direct SQL queries.
+	 * This method deletes all items that match the base WHERE clause and the keep last rules.
+	 * 
+	 * @return int The number of deleted items.
+	 */
+	protected function purge_sql() {
+
+		global $wpdb;
+
+		$keep_days_sql = $this->keep_days_filter();
+		$keep_items_sql = $this->keep_items_filter();
+
+		$deleted = 0;
+
+		foreach ( ADBC_Sites::instance()->get_sites_list() as $site ) {
+
+			ADBC_Sites::instance()->switch_to_blog_id( $site['id'] );
+
+			// Wrap in a derived table to dodge MySQL error 1093
+			$sql = "
+				DELETE FROM {$this->table()}
+				WHERE {$this->pk()} IN (
+					SELECT del_id FROM (
+						SELECT main.{$this->pk()} AS del_id
+						FROM   {$this->table()}  AS main
+						   	   {$this->extra_joins()}
+						WHERE  {$this->base_where()}
+							   {$keep_days_sql}
+							   {$keep_items_sql}
+					) AS tmp
+				)
+			";
+
+			$deleted += $wpdb->query( $sql );
+
+			ADBC_Sites::instance()->restore_blog();
+
+		}
+
+		return $deleted;
+
+	}
+
+	/**
 	 * Sets the "keep last" config for this handler.
 	 * This can be used to set a custom rule for the "keep last" feature.
 	 * 
 	 * @param array|false|null $value The value to set, can be NULL (use default keep_last setting), FALSE (no keep‐last for this run), or an array (custom rule).
 	 */
 	public function set_keep_last_config( $value ) {
-		// NULL  = use default keep_last settings (normal behaviour)
+		// NULL  = use default keep_last settings (normal behavior)
 		// FALSE = no keep‐last for this run
 		// array = custom rule (same structure as default settings)
 		$this->keep_last_config = $value;

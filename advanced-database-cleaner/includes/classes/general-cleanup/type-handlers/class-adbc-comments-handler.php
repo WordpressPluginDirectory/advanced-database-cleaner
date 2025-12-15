@@ -94,7 +94,7 @@ class ADBC_Cleanup_Trash_Comments_Handler extends ADBC_Cleanup_Comments_Handler_
 		return 'trashed_comments';
 	}
 	protected function base_where() {
-		return "( comment_approved = 'trash' OR comment_approved = 'post-trashed' )";
+		return "( comment_approved = 'trash' )";
 	}
 }
 

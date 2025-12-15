@@ -73,6 +73,12 @@ class ADBC_Cron_Jobs_Endpoints {
 
 			$cleaned_cron_jobs = ADBC_Hardcoded_Items::instance()->exclude_hardcoded_items_from_selected_items( $validation_answer, 'cron_jobs', "wp" );
 
+			if ( ADBC_VERSION_TYPE === 'PREMIUM' )
+				$cleaned_cron_jobs = ADBC_Scan_Utils::exclude_r_wp_items_from_selected_items( $cleaned_cron_jobs, 'cron_jobs' );
+
+			if ( empty( $cleaned_cron_jobs ) )
+				return ADBC_Rest::error( __( "Selected cron jobs cannot be deleted because they belong to WordPress.", 'advanced-database-cleaner' ), ADBC_Rest::BAD_REQUEST );
+
 			$grouped = ADBC_Selected_Items_Validator::group_selected_items_by_site_id( $cleaned_cron_jobs );
 
 			$not_processed = ADBC_Cron_Jobs::delete_cron_jobs( $grouped );
@@ -89,6 +95,32 @@ class ADBC_Cron_Jobs_Endpoints {
 
 			return ADBC_Rest::error_for_uncaught_exception( __METHOD__, $e );
 
+		}
+	}
+
+	/**
+	 * Count the total number of cron jobs that are not scanned.
+	 *
+	 * @return WP_REST_Response The response.
+	 */
+	public static function count_total_not_scanned_cron_jobs() {
+		try {
+			return ADBC_Rest::success( "", ADBC_Cron_Jobs::count_total_not_scanned_cron_jobs() );
+		} catch (Throwable $e) {
+			return ADBC_Rest::error_for_uncaught_exception( __METHOD__, $e );
+		}
+	}
+
+	/**
+	 * Count the total number of cron jobs that have no registered action (no callbacks hooked to their hook name).
+	 *
+	 * @return WP_REST_Response The response.
+	 */
+	public static function count_total_cron_jobs_with_no_action() {
+		try {
+			return ADBC_Rest::success( "", ADBC_Cron_Jobs::count_total_cron_jobs_with_no_action() );
+		} catch (Throwable $e) {
+			return ADBC_Rest::error_for_uncaught_exception( __METHOD__, $e );
 		}
 	}
 

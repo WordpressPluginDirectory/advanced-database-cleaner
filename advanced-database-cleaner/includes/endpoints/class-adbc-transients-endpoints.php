@@ -133,6 +133,12 @@ class ADBC_Transients_Endpoints {
 
 			$cleaned_transients = ADBC_Hardcoded_Items::instance()->exclude_hardcoded_items_from_selected_items( $validation_answer, 'transients', "wp" );
 
+			if ( ADBC_VERSION_TYPE === 'PREMIUM' )
+				$cleaned_transients = ADBC_Scan_Utils::exclude_r_wp_items_from_selected_items( $cleaned_transients, 'transients' );
+
+			if ( empty( $cleaned_transients ) )
+				return ADBC_Rest::error( __( "Selected transients cannot be deleted because they belong to WordPress.", 'advanced-database-cleaner' ), ADBC_Rest::BAD_REQUEST );
+
 			$grouped = ADBC_Selected_Items_Validator::group_selected_items_by_site_id( $cleaned_transients );
 
 			$not_processed = ADBC_Transients::delete_transients( $grouped );
@@ -149,6 +155,45 @@ class ADBC_Transients_Endpoints {
 
 			return ADBC_Rest::error_for_uncaught_exception( __METHOD__, $e );
 
+		}
+	}
+
+	/**
+	 * Count the total number of big transients.
+	 *
+	 * @return WP_REST_Response The response.
+	 */
+	public static function count_big_transients() {
+		try {
+			return ADBC_Rest::success( "", ADBC_Transients::count_big_transients() );
+		} catch (Throwable $e) {
+			return ADBC_Rest::error_for_uncaught_exception( __METHOD__, $e );
+		}
+	}
+
+	/**
+	 * Count the total number of transients that are not scanned.
+	 *
+	 * @return WP_REST_Response The response.
+	 */
+	public static function count_total_not_scanned_transients() {
+		try {
+			return ADBC_Rest::success( "", ADBC_Transients::count_total_not_scanned_transients() );
+		} catch (Throwable $e) {
+			return ADBC_Rest::error_for_uncaught_exception( __METHOD__, $e );
+		}
+	}
+
+	/**
+	 * Count the total number of expired transients.
+	 *
+	 * @return WP_REST_Response The response.
+	 */
+	public static function count_expired_transients() {
+		try {
+			return ADBC_Rest::success( "", ADBC_Cleanup_Type_Registry::handler( 'expired_transients' )->count()['count'] );
+		} catch (Throwable $e) {
+			return ADBC_Rest::error_for_uncaught_exception( __METHOD__, $e );
 		}
 	}
 

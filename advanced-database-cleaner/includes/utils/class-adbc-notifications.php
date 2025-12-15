@@ -122,7 +122,8 @@ class ADBC_Notifications extends ADBC_Singleton {
 	 * @return array Notifications array.
 	 */
 	public function get_all_non_dismissed() {
-		return array_filter( $this->notifications, fn( $n ) => ! $n['dismissed'] );
+		return array_filter( $this->notifications, function ($n) {
+			return ! $n['dismissed']; } );
 	}
 
 	/**
@@ -131,7 +132,8 @@ class ADBC_Notifications extends ADBC_Singleton {
 	 * @return array Warnings array.
 	 */
 	public function get_warnings() {
-		return array_filter( $this->get_all_non_dismissed(), fn( $n ) => $n['type'] === 'warning' );
+		return array_filter( $this->get_all_non_dismissed(), function ($n) {
+			return $n['type'] === 'warning'; } );
 	}
 
 	/**
@@ -140,7 +142,8 @@ class ADBC_Notifications extends ADBC_Singleton {
 	 * @return array Local notifications array.
 	 */
 	public function get_local_notifications() {
-		return array_filter( $this->get_all_non_dismissed(), fn( $n ) => ! $n['global'] && $n['type'] !== 'warning' );
+		return array_filter( $this->get_all_non_dismissed(), function ($n) {
+			return ! $n['global'] && $n['type'] !== 'warning'; } );
 	}
 
 	/**
@@ -149,7 +152,8 @@ class ADBC_Notifications extends ADBC_Singleton {
 	 * @return array Global notifications array.
 	 */
 	public function get_global_notifications() {
-		return array_filter( $this->get_all_non_dismissed(), fn( $n ) => $n['global'] && $n['type'] !== 'warning' );
+		return array_filter( $this->get_all_non_dismissed(), function ($n) {
+			return $n['global'] && $n['type'] !== 'warning'; } );
 	}
 
 	/**

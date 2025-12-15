@@ -27,11 +27,6 @@ class ADBC_Users_Meta {
 		$users_meta_list = [];
 		$total_users_meta = 0;
 
-		$big_users_meta_count = self::count_big_users_meta();
-		$not_scanned_count = self::count_total_not_scanned_users_meta();
-		$duplicated_users_meta_count = self::count_duplicated_users_meta();
-		$unused_users_meta_count = self::count_unused_users_meta();
-
 		$scan_counter = new ADBC_Scan_Counter();
 
 		$startRecord = ( $filters['current_page'] - 1 ) * $filters['items_per_page'];
@@ -77,7 +72,6 @@ class ADBC_Users_Meta {
 						'name' => $user_meta->name, // Used in the known addons modal & "show value modal". To be generic and work for all items types.
 						'meta_key' => $user_meta->name,
 						'value' => $user_meta->value,
-						'is_truncated' => $user_meta->is_truncated,
 						'size' => $user_meta->size,
 						'user_id' => $user_meta->user_id,
 						'site_id' => $user_meta->site_id,
@@ -106,10 +100,6 @@ class ADBC_Users_Meta {
 			'items' => $users_meta_list,
 			'total_items' => $total_users_meta,
 			'real_current_page' => min( $filters['current_page'], $total_real_pages ),
-			'big_users_meta_count' => $big_users_meta_count,
-			'not_scanned_count' => $not_scanned_count,
-			'duplicated_users_meta_count' => $duplicated_users_meta_count,
-			'unused_users_meta_count' => $unused_users_meta_count,
 			'categorization_count' => $scan_counter->get_categorization_count(),
 			'plugins_count' => $scan_counter->get_plugins_count(),
 			'themes_count' => $scan_counter->get_themes_count(),
@@ -120,8 +110,8 @@ class ADBC_Users_Meta {
 	 * Get the users meta list that satisfy the UI filters.
 	 *
 	 * @param array $filters Output of sanitize_filters().
-	 * @param int $limit Limit for the number of rows to return.
-	 * @param int $offset Offset for the number of rows to return.
+	 * @param int   $limit   Limit for the number of rows to return.
+	 * @param int   $offset  Offset for the number of rows to return.
 	 *
 	 * @return array List of users meta that satisfy the filters.
 	 */
@@ -132,6 +122,7 @@ class ADBC_Users_Meta {
 		$site_id = get_current_blog_id(); // get the main site id
 
 		$params[] = absint( $site_id );
+		$duplicate_join_sql = '';
 
 		/* ────────────────────────────────────────────────────────────
 		 * Build a safe ORDER BY clause
@@ -144,7 +135,7 @@ class ADBC_Users_Meta {
 
 		$sort_col = $filters['sort_by'] ?? '';
 		$sort_dir = strtoupper( $filters['sort_order'] ?? 'ASC' );
-		$sort_dir = $sort_dir === 'DESC' ? 'DESC' : 'ASC';
+		$sort_dir = ( $sort_dir === 'DESC' ) ? 'DESC' : 'ASC';
 
 		// Add 'order by' clause if the column is allowed.
 		$order_by_sql = isset( $allowed_columns[ $sort_col ] )
@@ -155,6 +146,26 @@ class ADBC_Users_Meta {
 		 * Assemble the dynamic WHERE parts
 		 * ────────────────────────────────────────────────────────────*/
 		$where = [];
+
+		/* — Unused filter — */
+		if ( isset( $filters['unused'] ) && in_array( $filters['unused'], [ 'yes', 'no' ], true ) ) {
+			$unused_sql = "main.user_id NOT IN (SELECT ID FROM {$wpdb->users})";
+			if ( $filters['unused'] === 'yes' ) {
+				$where[] = $unused_sql;
+			} else {
+				$where[] = "NOT ( {$unused_sql} )";
+			}
+		}
+
+		/* — Size ≥ threshold — */
+		if ( ! empty( $filters['size'] ) && (int) $filters['size'] > 0 ) {
+			$bytes = ADBC_Common_Utils::convert_size_to_bytes(
+				$filters['size'],
+				$filters['size_unit']
+			);
+			$where[] = 'OCTET_LENGTH(main.`meta_value`) >= %d';
+			$params[] = $bytes;
+		}
 
 		/* — Search filter — */
 		if ( ! empty( $filters['search_for'] ) && ! empty( $filters['search_in'] ) ) {
@@ -181,33 +192,38 @@ class ADBC_Users_Meta {
 			}
 		}
 
-		/* — Size ≥ threshold — */
-		if ( ! empty( $filters['size'] ) && (int) $filters['size'] > 0 ) {
-			$bytes = ADBC_Common_Utils::convert_size_to_bytes(
-				$filters['size'],
-				$filters['size_unit']
-			);
-			$where[] = 'OCTET_LENGTH(main.`meta_value`) >= %d';
-			$params[] = $bytes;
-		}
-
-		/* — Duplicated filter — */
+		/* — Duplicated filter (optimized, no correlated subquery) — */
 		if ( isset( $filters['duplicated'] ) && in_array( $filters['duplicated'], [ 'yes', 'no' ], true ) ) {
-			$exists_sql = "EXISTS (SELECT 1 FROM {$wpdb->usermeta} dup WHERE dup.user_id = main.user_id AND dup.meta_key = main.meta_key AND dup.meta_value = main.meta_value AND dup.umeta_id < main.umeta_id)";
-			if ( $filters['duplicated'] === 'yes' ) {
-				$where[] = $exists_sql;
-			} else {
-				$where[] = "NOT ( {$exists_sql} )";
-			}
-		}
 
-		/* — Unused filter — */
-		if ( isset( $filters['unused'] ) && in_array( $filters['unused'], [ 'yes', 'no' ], true ) ) {
-			$unused_sql = "main.user_id NOT IN (SELECT ID FROM {$wpdb->users})";
-			if ( $filters['unused'] === 'yes' ) {
-				$where[] = $unused_sql;
+			// Build a derived table of groups: per (user_id, meta_key, value-hash),
+			// compute min(umeta_id) and count(*).
+			$dup_subquery = "
+				SELECT
+					user_id,
+					meta_key,
+					CRC32(meta_value) AS vhash,
+					MIN(umeta_id)     AS min_umeta_id,
+					COUNT(*)          AS cnt
+				FROM {$wpdb->usermeta}
+				GROUP BY user_id, meta_key, CRC32(meta_value)
+			";
+
+			$duplicate_join_sql = "
+				LEFT JOIN ( {$dup_subquery} ) dupg
+					ON dupg.user_id  = main.user_id
+				AND dupg.meta_key = main.meta_key
+				AND dupg.vhash    = CRC32(main.meta_value)
+			";
+
+			if ( $filters['duplicated'] === 'yes' ) {
+				// Only rows that belong to a group with more than one row,
+				// AND that are NOT the minimal umeta_id (i.e. the “duplicate” ones).
+				$where[] = '(dupg.cnt > 1 AND main.umeta_id > dupg.min_umeta_id)';
 			} else {
-				$where[] = "NOT ( {$unused_sql} )";
+				// Only rows that are NOT duplicates:
+				// - either not in any group (cnt is NULL)
+				// - or they are the minimal umeta_id in their group.
+				$where[] = '(dupg.cnt IS NULL OR main.umeta_id = dupg.min_umeta_id)';
 			}
 		}
 
@@ -218,22 +234,14 @@ class ADBC_Users_Meta {
 		// Final SQL and fetch
 		$sql = $wpdb->prepare(
 			"SELECT
-				main.`meta_key`                         AS name,
-				main.`umeta_id`                         AS umeta_id,
-				main.`user_id`                          AS user_id,
-				%d						   AS site_id,
-				CASE
-					WHEN CHAR_LENGTH(main.`meta_value`) > $truncate_length
-					THEN SUBSTRING(main.`meta_value`, 1, $truncate_length)
-					ELSE main.`meta_value`
-				END                                AS value,
-				CASE
-					WHEN CHAR_LENGTH(main.`meta_value`) > $truncate_length
-					THEN 1
-					ELSE 0
-				END              			   AS is_truncated,
-				OCTET_LENGTH(main.`meta_value`)         AS size
+				main.`meta_key`                         			AS name,
+				main.`umeta_id`                         			AS umeta_id,
+				main.`user_id`                          			AS user_id,
+				%d						   							AS site_id,
+				SUBSTRING(main.`meta_value`, 1, {$truncate_length}) AS value,
+				OCTET_LENGTH(main.`meta_value`)         			AS size
 			FROM {$wpdb->usermeta} main
+			{$duplicate_join_sql}
 			{$where_sql}
 			{$order_by_sql}
 			LIMIT %d OFFSET %d
@@ -422,23 +430,26 @@ class ADBC_Users_Meta {
 		return array_values( array_unique( array_filter( (array) $existing_names ) ) );
 	}
 
-	/**
+	/** 
 	 * Count duplicated usermeta
 	 * 
 	 * @return int Total duplicated users meta.
 	 */
 	public static function count_duplicated_users_meta() {
 		global $wpdb;
+
 		return (int) $wpdb->get_var( "
-			SELECT COUNT(*)
-			FROM {$wpdb->usermeta} main
-			WHERE EXISTS (
-				SELECT 1 FROM {$wpdb->usermeta} dup
-				WHERE dup.user_id = main.user_id
-					AND dup.meta_key = main.meta_key
-					AND dup.meta_value = main.meta_value
-					AND dup.umeta_id < main.umeta_id
-			)
+			SELECT COALESCE(SUM(g.cnt - 1), 0)
+			FROM (
+				SELECT
+					user_id,
+					meta_key,
+					CRC32(meta_value) AS vhash,
+					COUNT(*)          AS cnt
+				FROM {$wpdb->usermeta}
+				GROUP BY user_id, meta_key, CRC32(meta_value)
+				HAVING cnt > 1
+			) AS g
 		" );
 	}
 

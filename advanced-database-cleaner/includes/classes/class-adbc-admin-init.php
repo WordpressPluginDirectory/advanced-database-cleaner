@@ -32,6 +32,11 @@ class ADBC_Admin_Init extends ADBC_Singleton {
 	private $icon_svg = "";
 
 	/**
+	 * Store original plugin links before other plugins modify them
+	 */
+	private $original_plugin_meta_links = [];
+
+	/**
 	 * Constructor.
 	 */
 	protected function __construct() {
@@ -125,6 +130,7 @@ class ADBC_Admin_Init extends ADBC_Singleton {
 				'sites_list' => ADBC_Sites::instance()->get_sites_list(),
 				'actionscheduler_actions_exists' => ADBC_Tables::is_actionscheduler_table_exists( 'actions' ) ? '1' : '0',
 				'actionscheduler_logs_exists' => ADBC_Tables::is_actionscheduler_table_exists( 'logs' ) ? '1' : '0',
+				'php_max_execution_time' => ( $value = (int) ini_get( 'max_execution_time' ) ) > 0 ? $value : 120,
 			)
 		);
 
@@ -616,6 +622,58 @@ class ADBC_Admin_Init extends ADBC_Singleton {
 		echo '<div class="error"><p>';
 		_e( 'The pro version of Advanced DB Cleaner has been de-activated since the newest premium version is active.', 'advanced-database-cleaner' );
 		echo "</p></div>";
+	}
+
+	/**
+	 * Static proxy for capture_original_plugin_meta_links to be used in the hooks.
+	 * 
+	 * @param array $links The current plugin meta links.
+	 * @param string $file The plugin file.
+	 * @return array The modified plugin meta links.
+	 */
+	public static function _capture_original_plugin_meta_links( $links, $file ) {
+		return self::instance()->capture_original_plugin_meta_links( $links, $file );
+	}
+
+	/**
+	 * Static proxy for restore_plugin_meta_links to be used in the hooks.
+	 * 
+	 * @param array $links The current plugin meta links.
+	 * @param string $file The plugin file.
+	 * @return array The modified plugin meta links.
+	 */
+	public static function _restore_plugin_meta_links( $links, $file ) {
+		return self::instance()->restore_plugin_meta_links( $links, $file );
+	}
+
+	/**
+	 * Capture the original WordPress default plugin meta links before any plugin modifies them
+	 */
+	public function capture_original_plugin_meta_links( $links, $file ) {
+
+		$plugin_file = plugin_basename( ADBC_MAIN_PLUGIN_FILE_PATH );
+
+		if ( $file === $plugin_file && empty( $this->original_plugin_meta_links ) ) {
+			$this->original_plugin_meta_links = $links;
+		}
+
+		return $links;
+
+	}
+
+	/**
+	 * Remove all third-party links
+	 */
+	public function restore_plugin_meta_links( $links, $file ) {
+
+		$plugin_file = plugin_basename( ADBC_MAIN_PLUGIN_FILE_PATH );
+
+		if ( $file !== $plugin_file ) {
+			return $links;
+		}
+
+		return $this->original_plugin_meta_links;
+
 	}
 
 }
