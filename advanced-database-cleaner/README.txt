@@ -5,7 +5,7 @@ Tags: clean, database, optimize, performance, postmeta
 Requires at least: 5.0.0
 Requires PHP: 7.0
 Tested up to: 6.9
-Stable tag: 4.0.3
+Stable tag: 4.0.4
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -250,6 +250,17 @@ This section describes how to install the plugin. In general, there are 3 ways t
 
 == Changelog ==
 
+= 4.0.4 – 25/12/2025 =
+- Fix: [Premium] Prevented license activation from being unintentionally removed after one week.
+- Fix: Resolved style conflicts with other plugins.
+- Fix: Corrected an issue where sorting usermeta by meta key returned empty results when the "duplicated" filter was applied.
+- Tweak: [Premium] Removed the weekly license check cron job when uninstalling the plugin.
+- Tweak: Refactored code to improve loading performance by caching data.
+- Tweak: Added translatable strings and corrected some date-format inconsistencies.
+- Tweak: Improved UI consistency across all tables.
+- Tweak: Increased Database Rows Batch limit to 50,000 by default for better performance on large sites.
+- Tweak: Added a refresh icon to the highlighted orange sections for easier counts refresh.
+
 = 4.0.3 – 14/12/2025 =
 - Fix: Improved compatibility with PHP 7.
 - Tweak: Optimized the loading of the Post Meta module for large websites.
@@ -333,202 +344,8 @@ Version 4.0.0 marks the biggest upgrade ever released for Advanced Database Clea
 - Premium: Enhanced - Multisite experience improved with clearer cross-site visibility, safer network-level operations, and tighter integration of ownership and analytics across all sites.
 - Premium: Enhanced - Numerous bugs and edge cases were resolved across all premium features, resulting in more stable behavior and more reliable, effective cleaning operations.
 
-= 3.1.6 - 24/03/2025 =
-- Fix: names containing HTML were not displayed correctly.
-- Fix: certain transients, options, tables, and cron jobs could not be deleted.
-- Fix: function _load_textdomain_just_in_time was called incorrectly.
-- Fix: after optimizing tables, the plugin now refreshes the data to accurately reflect the database’s real status.
-- Fix: enhanced the plugin's security.
-- Fix (PRO): sometimes users were unable to deactivate their license.
-- Tweak: improved how the plugin edits the autoload value for options.
-- Tweak: increased the max_execution_time only after a scan has started, and under specific conditions.
-- Tweak: cleaned up and enhanced some PHP, CSS, and JS code parts.
-- New: the Options tab now displays the total size of autoloaded options.
-- New: in Multisite, users can now choose to display the plugin menu in the Network Admin panel.
-- New (PRO): added support for new autoload option values in filters: on, auto, auto-on, auto-off.
-- New (PRO): users can now assign items to WordPress using the "manual categorization" feature.
-
-= 3.1.5 - 19/09/2024 =
-- Fix: Automatic conversion of false to array is deprecated
-- Fix: Cannot modify header information - headers already sent..
-- Fix: Object of class stdClass could not be converted to string
-
-= 3.1.4 - 23/01/2024 =
-- Security: enhancing the security by avoiding deserialization (thanks to Richard Telleng from Wordfence)
-- PRO: fix endless scan reloading
-- PRO: fix PHP warning: Implicit conversion from float to int
-- PRO: some code cleanup
-
-= 3.1.3 - 12/09/2023 =
-- Security: enhancing the security by sanitizing some parameters
-- Fix: fixed 'Constant FILTER_SANITIZE_STRING is deprecated in PHP 8'
-- Fix: fixed 'Undefined property : stdClass::$data_free'
-- Fix: fixed 'PHP Fatal error:  Uncaught TypeError: date(): Argument #2 ($timestamp) must be of type ?int'
-- Tweak: better handling of nonces
-- Compatibility: tested with the latest version of WordPress 6.3.1
-
-= 3.1.2 - 22/02/2023 =
-- Security fix: when saving the settings
-- Fix: changing the 'autoload' of an option may sometimes result in it being created twice
-- Fix: activating both the free and pro versions together causes compatibility issues
-- Tweak: enhancing some blocks of code to use Ajax
-- Tweak: better handling the use of the WP_List_Table class
-- Tweak (PRO): enhancing the license page + the update process of the plugin
-- Compatibility: Tested with the latest version of WordPress 6.1.1
-
-= 3.1.1 - 24/06/2022 =
-- Security fix: enhancing the security of the plugin by escaping some URLs before outputting them
-
-= 3.1.0 - 16/06/2022 =
-- Fix: fixing the error 'Fatal error: Can't use function return value in write context'
-- Fix: fixing the Warning: count(): Parameter must be an array or an object that implements Countable
-- Tweak: correcting of some typos and grammar
-- Tweak: deleting some useless data from "overview & settings" tab
-- Tweak: enhancing the CSS code, the plugin is responsive now and can be used in small screens
-- Tweak: enhancing some blocks of PHP code
-- New: adding "delete filter" for custom cleanup elements in "general cleanup" tab
-- Info: since we have changed a lot of CSS code, please refresh your browser cache or click "Ctrl + F5"
-- Info: great feature will be added to the next version
-
-= 3.0.4 - 21/01/2022 =
-- Tweak: Enhancing the security of the plugin
-- Tweak: Testing the plugin with latest versions of WP
-
-= 3.0.3 - 06/10/2020 =
-- Tweak: Cleaning the code by deleting unused blocks of code
-- Tweak: Enhancing the security of the plugin
-
-= 3.0.2 - 01/09/2020 =
-- Fix: fixing an issue in the general cleanup tab preventing users from deleting orphaned items
-- Tweak: we are now using SweetAlert for all popup boxes
-- Tweak: enhancing the JavaScript code
-- Tweak: enhancing some blocks of code
-- Tweak: enhancing the security of the plugin
-
-= 3.0.1 - 26/08/2020 =
-- Fix: some calls in the JS file has been corrected
-- Fix: the warning "Deprecated: array_key_exists()" is now solved
-- Fix: an issue of 'failed to open stream: No such file or directory' is now solved
-- Tested with WordPress 5.5
-- New features very soon!
-
-= 3.0.0 - 05/12/2019 =
-* IMPORTANT NOTICE FOR PRO USERS: After you upgrade to 3.0.0 from an old version, you will notice that WordPress has deactivated the plugin due to an error: 'Plugin file does not exist'. This is because we have renamed the pro plugin folder name from "advanced-db-cleaner" to "advanced-database-cleaner-pro", causing the WordPress to not being able to find the old one and therefore deactivating the plugin. Just activate it again. It doesn’t break anything. Once you activate the plugin again it will continue working normally without any issues. You will also probably lose the pro version after this upgrade (This is due to a conflict between the free and pro versions which is now solved). If it is the case, please follow these steps to restore your pro version with all new features: (https://sigmaplugin.com/blog/restore-pro-version-after-upgrade-to-3-0-0)
-
-* COMPATIBILITY: The plugin is tested with WordPress 5.3
-* CHANGE: Some changes to readme.txt file
-* REMOVE: Drafts are not cleaned anymore in 3.0.0 since many users have reported that drafts are useful for them
-* New: You can now clean up new items: pingbacks, trackbacks, orphaned user meta, orphaned term meta, expired transients
-* New: The plugin icon in the left side menu has been changed to white color
-* New: Change text-domain to 'advanced-database-cleaner'
-* New: Enhancements to the look and feel of the plugin
-* New: The sidebar has been changed for the free version and deleted in the pro version
-* New: For options, we have added the option size column and two new actions: Set autoload to no / yes
-* New: For tables, we have added two actions: Empty tables and repair tables
-* New: You can now order and sort all items
-* New: You can change the number of items per page
-* New: You can keep last x days' data from being cleaned and clean only data older than the number of days you have specified
-* New: You can specify elements to cleanup in a scheduled task. You can also create as many scheduled tasks as you need
-* New: Add information to each line of unused data in 'General clean-up' tab to let users know more about each item they will clean
-* New: Display/view items before cleaning them (in 'General cleanup' tab) is now in the free version
-* New: Add a new setting to hide the "premium" tab in the free version
-* Fix: Repair some strings with correct text domain
-* Fix: Some tasks with arguments can't be cleaned. This is fixed now
-* Fix: Some tasks with the same hook name and different arguments were not displayed. This is fixed now
-* Fix: In some previous versions, tables were not shown for some users. This has been fixed
-* PERFORMANCE: All images used by the plugin are now in SVG format
-* PERFORMANCE: Restructuring the whole code for better performance
-* SECURITY: add some _wpnonce to forms
-* New (PRO): Add "Pro" to the title of the pro version to distinguish between the free and the pro versions
-* New (PRO): You can now search and filter all elements: options, tables, tasks, etc. based on several criteria
-* New (PRO): Add progress bar when searching for orphan items to show remaining items to process
-* New (PRO): Add a category called "uncategorized" to let users see items that have not been categorized yet
-* Fix (PRO): The activation issue is now fixed
-* Fix (PRO): The scan of orphaned items generated timeout errors for big databases, we use now ajax to solve this
-* Fix (PRO): A conflict between the free and the pro versions is now solved
-* PERFORMANCE (PRO): We are now using an enhanced new update class provided by EDD plugin
-* PERFORMANCE (PRO): Set autoload to no in all options used by the plugin
-* PERFORMANCE (PRO): The plugin does not store scan results in DB anymore. We use files instead
-* SECURITY (PRO): The license is now hidden after activation for security reasons
-* WEBSITE (PRO): You can now view your purchase history, downloads, generate an invoice, upgrade your license, etc. [Read more](https://sigmaplugin.com/blog/how-to-get-access-to-my-account-and-downloads)
-* WEBSITE (PRO): Enhancements of the [plugin premium page](https://sigmaplugin.com/downloads/wordpress-advanced-database-cleaner)
-
-= 2.0.0 =
-* Some changes to readme.txt file
-* Changing the way the plugin can be translated
-* Correcting __() to some texts
-* Correcting some displaying texts
-* Big change in styles
-* Restructuring the whole code for better performance
-* Creation of the plugin main page: (https://sigmaplugin.com/downloads/wordpress-advanced-database-cleaner)
-* Adding language translation support
-* Correct the time zone offset for the scheduled tasks
-* Skipping InnoDB tables while optimizing
-* Change size of lost tables data from 'o' to 'KB'
-* Main menu is now under 'Tools' not 'settings'
-* Adding separate left menu (can be disabled)
-* Adding overview page with some useful information
-* Adding settings page
-* "Reset database" is now in a separate plugin (please view our plugins page)
-* Multisite: now only the main site can clean the network
-* New feature: Display/view items before cleaning them (Pro)
-* New feature: view and clean options
-* New feature: Detect orphan options, plugins options, themes options and WP options (Pro)
-* New feature: view and clean cron (scheduled tasks)
-* New feature: Detect orphan tasks, plugins tasks, themes tasks and WP tasks (Pro)
-* New feature: view and clean database tables
-* New feature: Detect orphan tables, plugins tables, themes tables and WP tables (Pro)
-
-= 1.3.7 =
-* Adding "clean trash-posts"
-* Updating FAQ
-* Updating readme file
-* Tested up to: 4.4
-
-= 1.3.6 =
-* Fixing a problem in donate button
-* Using _e() and __() for all texts in the plugin
-
-= 1.3.5 =
-* New feature: Adding "Clean Cron". You can now clean unnecessary scheduled tasks.
-* Updating FAQ
-
-= 1.3.1 =
-* Adding FAQ
-
-= 1.3.0 =
-* Some code optimizations
-* New feature: Support multisite. You can now clean and optimize your database in multisite installation.
-
-= 1.2.3 =
-* Some optimizations and style modifications
-* New feature: Adding the scheduler. You can now schedule the clean-up and optimization of your database.
-
-= 1.2.2 =
-* Some optimizations and style modifications
-
-= 1.2.1 =
-* Some optimizations and style modifications
-* "Clean database" tab shows now only elements that should be cleaned instead of listing all elements.
-* "Clean database" tab shows now an icon that indicates the state of your database.
-* "Optimize database" tab shows now only tables that should be optimized instead of listing all tables.
-* "Optimize database" tab shows now an icon that indicates the state of your tables.
-* "Reset database" shows now a warning before resetting the database.
-
-= 1.2.0 =
-* Some optimizations and style modifications
-* New feature: Adding "Reset database"
-
-= 1.1.1 =
-* Some optimizations and style modifications
-* Adding "Donate link"
-
-= 1.1.0 =
-* Some optimizations and style modifications
-* New feature: Adding "Optimize Database"
-
-= 1.0.0 =
-* First release: Hello world!
+= Previous changelog =
+- For previous changelog, please refer to [the changelog on sigmaplugin.com](https://docs.sigmaplugin.com/article/123-changelog-of-the-advanced-db-cleaner-plugin-free-version).
 
 == Upgrade Notice ==
 

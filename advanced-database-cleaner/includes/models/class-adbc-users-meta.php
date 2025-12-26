@@ -128,8 +128,8 @@ class ADBC_Users_Meta {
 		 * Build a safe ORDER BY clause
 		 * ────────────────────────────────────────────────────────────*/
 		$allowed_columns = [ 
-			'meta_key' => '`meta_key`',
-			'size' => 'OCTET_LENGTH(`meta_value`)',
+			'meta_key' => '`name`',
+			'size' => 'size',
 			'user_id' => '`user_id`',
 		];
 

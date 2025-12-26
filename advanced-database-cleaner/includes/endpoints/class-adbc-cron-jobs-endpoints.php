@@ -71,23 +71,15 @@ class ADBC_Cron_Jobs_Endpoints {
 			if ( ! is_array( $validation_answer ) )
 				return ADBC_Rest::error( $validation_answer, ADBC_Rest::BAD_REQUEST );
 
-			$cleaned_cron_jobs = ADBC_Hardcoded_Items::instance()->exclude_hardcoded_items_from_selected_items( $validation_answer, 'cron_jobs', "wp" );
-
-			if ( ADBC_VERSION_TYPE === 'PREMIUM' )
-				$cleaned_cron_jobs = ADBC_Scan_Utils::exclude_r_wp_items_from_selected_items( $cleaned_cron_jobs, 'cron_jobs' );
-
-			if ( empty( $cleaned_cron_jobs ) )
-				return ADBC_Rest::error( __( "Selected cron jobs cannot be deleted because they belong to WordPress.", 'advanced-database-cleaner' ), ADBC_Rest::BAD_REQUEST );
-
-			$grouped = ADBC_Selected_Items_Validator::group_selected_items_by_site_id( $cleaned_cron_jobs );
+			$grouped = ADBC_Selected_Items_Validator::group_selected_items_by_site_id( $validation_answer );
 
 			$not_processed = ADBC_Cron_Jobs::delete_cron_jobs( $grouped );
 
 			// Delete the cron jobs from the scan results
-			$cron_jobs_names = array_column( $cleaned_cron_jobs, 'name' ); // Create an array containing only the cron job names.
-
-			if ( ADBC_VERSION_TYPE === 'PREMIUM' )
+			if ( ADBC_VERSION_TYPE === 'PREMIUM' ) {
+				$cron_jobs_names = array_column( $validation_answer, 'name' ); // Create an array containing only the cron job names.
 				ADBC_Scan_Utils::update_scan_results_file_after_deletion( 'cron_jobs', $cron_jobs_names, $not_processed );
+			}
 
 			return ADBC_Rest::success( "", count( $not_processed ) );
 

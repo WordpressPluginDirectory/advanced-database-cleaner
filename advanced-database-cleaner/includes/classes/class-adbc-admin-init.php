@@ -108,7 +108,7 @@ class ADBC_Admin_Init extends ADBC_Singleton {
 		// Enqueue the scripts and styles.
 		wp_enqueue_style( 'adbc-app-style', ADBC_PLUGIN_ABSOLUTE_URL . '/assets/css/app.css', [], ADBC_PLUGIN_VERSION );
 		wp_enqueue_script( 'adbc-vendors-script', ADBC_PLUGIN_ABSOLUTE_URL . '/assets/js/vendors.js', [], ADBC_PLUGIN_VERSION, true );
-		wp_enqueue_script( 'adbc-app-script', ADBC_PLUGIN_ABSOLUTE_URL . '/assets/js/app.js', [ 'adbc-vendors-script', 'wp-i18n' ], ADBC_PLUGIN_VERSION, true );
+		wp_enqueue_script( 'adbc-app-script', ADBC_PLUGIN_ABSOLUTE_URL . '/assets/js/app.js', [ 'adbc-vendors-script', 'wp-i18n', 'wp-date' ], ADBC_PLUGIN_VERSION, true );
 
 		// Load the translations for the app script.
 		wp_set_script_translations( 'adbc-app-script', 'advanced-database-cleaner', ADBC_PLUGIN_DIR_PATH . 'languages' );

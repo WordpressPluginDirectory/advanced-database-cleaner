@@ -104,7 +104,7 @@ class ADBC_Settings extends ADBC_Singleton {
 				'validator_method' => 'is_scan_setting_valid'
 			],
 			'database_rows_batch' => [ 
-				'default' => 10000,
+				'default' => 50000,
 				'validator_class' => 'ADBC_Settings_Validator',
 				'validator_method' => 'is_performance_settings_valid'
 			],

@@ -349,7 +349,6 @@ const translations = [
   __("Get help with technical issues, billing ...", "advanced-database-cleaner"),
   __("Read more", "advanced-database-cleaner"),
   __("Dismiss", "advanced-database-cleaner"),
-  __("Loading data ..", "advanced-database-cleaner"),
   __("Confirm", "advanced-database-cleaner"),
   __("All", "advanced-database-cleaner"),
   __("Activation", "advanced-database-cleaner"),
@@ -990,6 +989,11 @@ const translations = [
   __("Item name mismatch", "advanced-database-cleaner"),
   __("Site inactive", "advanced-database-cleaner"),
   __("Lifetime", "advanced-database-cleaner"),
+  _x(
+    "F j, Y",
+    "License expiration date format (e.g. December 10, 2025)",
+    "advanced-database-cleaner"
+  ),
   __(
     "Your license has expired. Please renew it to continue receiving updates and support. Click the 'My Account' link below to access your account and renew your license.",
     "advanced-database-cleaner"
@@ -1184,6 +1188,12 @@ const translations = [
     "Specifies the maximum execution time for scan operations in seconds. Adjusting this value can help prevent long-running scans from causing timeout issues. Default is 0, which means the plugin will decide the best value.",
     "advanced-database-cleaner"
   ),
+  __("Orphans", "advanced-database-cleaner"),
+  __("Unknown", "advanced-database-cleaner"),
+  __("Not scanned", "advanced-database-cleaner"),
+  __("Less filters", "advanced-database-cleaner"),
+  __("More filters", "advanced-database-cleaner"),
+  __("Show manual corrections only", "advanced-database-cleaner"),
   __("Local scan only", "advanced-database-cleaner"),
   __("Less accurate", "advanced-database-cleaner"),
   __(
@@ -1196,7 +1206,6 @@ const translations = [
     "The plugin will begin by scanning items against your local files, then it will anonymously send the scan results to a secure remote database for more accurate results.",
     "advanced-database-cleaner"
   ),
-  __("Not scanned", "advanced-database-cleaner"),
   __("Selected", "advanced-database-cleaner"),
   __(
     "A scan is in progress. Please wait until it finishes before running a new scan.",
@@ -1295,21 +1304,26 @@ const translations = [
   __("Total timeouts:", "advanced-database-cleaner"),
   __("Total forced timeouts:", "advanced-database-cleaner"),
   __("files", "advanced-database-cleaner"),
-  __("Orphans", "advanced-database-cleaner"),
-  __("Unknown", "advanced-database-cleaner"),
-  __("Less filters", "advanced-database-cleaner"),
-  __("More filters", "advanced-database-cleaner"),
-  __("Show manual corrections only", "advanced-database-cleaner"),
   __("Show filters", "advanced-database-cleaner"),
   __("Hide filters", "advanced-database-cleaner"),
   sprintf(
     /* translators: %s: number of cron jobs with no action */
-    __("%s cron job(s) with no action", "advanced-database-cleaner"),
+    _n(
+      "%s cron job with no action",
+      "%s cron jobs with no action",
+      variable,
+      "advanced-database-cleaner"
+    ),
     variable
   ),
   sprintf(
     /* translators: %s: number of cron jobs not scanned */
-    __("%s cron job(s) not scanned", "advanced-database-cleaner"),
+    _n(
+      "%s cron job not scanned",
+      "%s cron jobs not scanned",
+      variable,
+      "advanced-database-cleaner"
+    ),
     variable
   ),
   __("Search in", "advanced-database-cleaner"),
@@ -1332,12 +1346,12 @@ const translations = [
   ),
   sprintf(
     /* translators: %s: number of big options */
-    __("%s big option(s) detected", "advanced-database-cleaner"),
+    _n("%s big option detected", "%s big options detected", variable, "advanced-database-cleaner"),
     variable
   ),
   sprintf(
     /* translators: %s: number of options not scanned */
-    __("%s option(s) not scanned", "advanced-database-cleaner"),
+    _n("%s option not scanned", "%s options not scanned", variable, "advanced-database-cleaner"),
     variable
   ),
   sprintf(
@@ -1368,39 +1382,59 @@ const translations = [
   __("Invalid prefix", "advanced-database-cleaner"),
   sprintf(
     /* translators: %s: number of tables to optimize */
-    __("%s table(s) to optimize", "advanced-database-cleaner"),
+    _n("%s table to optimize", "%s tables to optimize", variable, "advanced-database-cleaner"),
     variable
   ),
   sprintf(
     /* translators: %s: number of tables to repair */
-    __("%s table(s) to repair", "advanced-database-cleaner"),
+    _n("%s table to repair", "%s tables to repair", variable, "advanced-database-cleaner"),
     variable
   ),
   sprintf(
     /* translators: %s: number of tables with invalid prefix */
-    __("%s table(s) with invalid prefix", "advanced-database-cleaner"),
+    _n(
+      "%s table with invalid prefix",
+      "%s tables with invalid prefix",
+      variable,
+      "advanced-database-cleaner"
+    ),
     variable
   ),
   sprintf(
     /* translators: %s: number of tables not scanned */
-    __("%s table(s) not scanned", "advanced-database-cleaner"),
+    _n("%s table not scanned", "%s tables not scanned", variable, "advanced-database-cleaner"),
     variable
   ),
   __("Table status", "advanced-database-cleaner"),
   __("Prefix status", "advanced-database-cleaner"),
   sprintf(
     /* translators: %s: number of expired transients */
-    __("%s expired transient(s) detected", "advanced-database-cleaner"),
+    _n(
+      "%s expired transient detected",
+      "%s expired transients detected",
+      variable,
+      "advanced-database-cleaner"
+    ),
     variable
   ),
   sprintf(
     /* translators: %s: number of big transients */
-    __("%s big transient(s) detected", "advanced-database-cleaner"),
+    _n(
+      "%s big transient detected",
+      "%s big transients detected",
+      variable,
+      "advanced-database-cleaner"
+    ),
     variable
   ),
   sprintf(
     /* translators: %s: number of transients not scanned */
-    __("%s transient(s) not scanned", "advanced-database-cleaner"),
+    _n(
+      "%s transient not scanned",
+      "%s transients not scanned",
+      variable,
+      "advanced-database-cleaner"
+    ),
     variable
   ),
   sprintf(

@@ -128,24 +128,38 @@ class ADBC_Common_Utils {
 	}
 
 	/**
-	 * Format a date string to a friendly format.
+	 * Format a date string to a friendly, localized format.
 	 *
 	 * @param string $date_string The date string to format.
-	 * @param string $date_format The format of the input date string.
-	 * 
+	 * @param string $date_format The format of the input date string (PHP DateTime format).
+	 *
 	 * @return string The formatted date string.
 	 */
 	public static function format_date_friendly( $date_string, $date_format = 'd/m/Y' ) {
 
-		// Create DateTime object from the input date string
 		$date = DateTime::createFromFormat( $date_format, $date_string );
 
-		// Check if the date is valid
-		if ( ! $date )
+		// Invalid date: keep original behavior.
+		if ( ! $date ) {
 			return $date_string;
+		}
 
-		// Format the date in the friendly format
-		return $date->format( 'F j, Y' ); // e.g., January 1, 2023
+		$timestamp = $date->getTimestamp();
+
+		// Translators can adjust the display format.
+		// Example output: "December 10, 2025".
+		$friendly_format = _x(
+			'F j, Y',
+			'Friendly date format (e.g. December 10, 2025)',
+			'advanced-database-cleaner'
+		);
+
+		if ( function_exists( 'wp_date' ) ) {
+			return wp_date( $friendly_format, $timestamp );
+		}
+
+		// Fallback for very old WordPress versions.
+		return date_i18n( $friendly_format, $timestamp );
 	}
 
 	/**

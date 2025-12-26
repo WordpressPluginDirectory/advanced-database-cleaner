@@ -71,23 +71,15 @@ class ADBC_Posts_Meta_Endpoints {
 			if ( ! is_array( $validation_answer ) )
 				return ADBC_Rest::error( $validation_answer, ADBC_Rest::BAD_REQUEST );
 
-			$cleaned_posts_meta = ADBC_Hardcoded_Items::instance()->exclude_hardcoded_items_from_selected_items( $validation_answer, 'posts_meta', "wp" );
-
-			if ( ADBC_VERSION_TYPE === 'PREMIUM' )
-				$cleaned_posts_meta = ADBC_Scan_Utils::exclude_r_wp_items_from_selected_items( $cleaned_posts_meta, 'posts_meta' );
-
-			if ( empty( $cleaned_posts_meta ) )
-				return ADBC_Rest::error( __( "Selected post meta cannot be deleted because they belong to WordPress.", 'advanced-database-cleaner' ), ADBC_Rest::BAD_REQUEST );
-
-			$grouped = ADBC_Selected_Items_Validator::group_selected_items_by_site_id( $cleaned_posts_meta );
+			$grouped = ADBC_Selected_Items_Validator::group_selected_items_by_site_id( $validation_answer );
 
 			$not_processed = ADBC_Posts_Meta::delete_posts_meta( $grouped );
 
 			// Delete the posts meta from the scan results
-			$posts_meta_names = array_column( $cleaned_posts_meta, 'name' ); // Create an array containing only the posts meta names.
-
-			if ( ADBC_VERSION_TYPE === 'PREMIUM' )
+			if ( ADBC_VERSION_TYPE === 'PREMIUM' ) {
+				$posts_meta_names = array_column( $validation_answer, 'name' ); // Create an array containing only the posts meta names.
 				ADBC_Scan_Utils::update_scan_results_file_after_deletion( 'posts_meta', $posts_meta_names, $not_processed );
+			}
 
 			return ADBC_Rest::success( "", count( $not_processed ) );
 

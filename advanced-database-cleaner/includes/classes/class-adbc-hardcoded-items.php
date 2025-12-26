@@ -599,6 +599,7 @@ class ADBC_Hardcoded_Items extends ADBC_Singleton {
 	private $adbc_cron_jobs = [ 
 		'adbc_cron_analytics' => '',
 		'adbc_cron_automation' => '',
+		'edd_sl_sdk_weekly_license_check_advanced-database-cleaner-premium' => '',
 	];
 
 	/**

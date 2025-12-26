@@ -131,23 +131,15 @@ class ADBC_Transients_Endpoints {
 			if ( ! is_array( $validation_answer ) )
 				return ADBC_Rest::error( $validation_answer, ADBC_Rest::BAD_REQUEST );
 
-			$cleaned_transients = ADBC_Hardcoded_Items::instance()->exclude_hardcoded_items_from_selected_items( $validation_answer, 'transients', "wp" );
-
-			if ( ADBC_VERSION_TYPE === 'PREMIUM' )
-				$cleaned_transients = ADBC_Scan_Utils::exclude_r_wp_items_from_selected_items( $cleaned_transients, 'transients' );
-
-			if ( empty( $cleaned_transients ) )
-				return ADBC_Rest::error( __( "Selected transients cannot be deleted because they belong to WordPress.", 'advanced-database-cleaner' ), ADBC_Rest::BAD_REQUEST );
-
-			$grouped = ADBC_Selected_Items_Validator::group_selected_items_by_site_id( $cleaned_transients );
+			$grouped = ADBC_Selected_Items_Validator::group_selected_items_by_site_id( $validation_answer );
 
 			$not_processed = ADBC_Transients::delete_transients( $grouped );
 
 			// Delete the transients from the scan results
-			$transients_names = array_column( $cleaned_transients, 'name' ); // Create an array containing only the transients names.
-
-			if ( ADBC_VERSION_TYPE === 'PREMIUM' )
+			if ( ADBC_VERSION_TYPE === 'PREMIUM' ) {
+				$transients_names = array_column( $validation_answer, 'name' ); // Create an array containing only the transients names.
 				ADBC_Scan_Utils::update_scan_results_file_after_deletion( 'transients', $transients_names, $not_processed );
+			}
 
 			return ADBC_Rest::success( "", count( $not_processed ) );
 
