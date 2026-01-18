@@ -49,6 +49,7 @@ class ADBC_Info_Endpoints {
 						__( 'Theme', 'advanced-database-cleaner' ) . ": " . $theme,
 						__( 'Parent theme', 'advanced-database-cleaner' ) . ": " . $parent_theme,
 						__( 'Memory limit', 'advanced-database-cleaner' ) . ": " . ( defined( 'WP_MEMORY_LIMIT' ) ? WP_MEMORY_LIMIT : 'N/A' ),
+						__( 'Autoload warning threshold', 'advanced-database-cleaner' ) . ": " . ADBC_Common_Utils::format_bytes( ADBC_Options::get_autoload_warning_limit() )
 					)
 				),
 				'database' => array(
@@ -71,6 +72,27 @@ class ADBC_Info_Endpoints {
 						__( 'License status', 'advanced-database-cleaner' ) . ": " . ( ADBC_VERSION_TYPE === 'PREMIUM' ? ADBC_License_Manager::get_license_status() : 'adbc_hidden' ),
 						__( 'License plan', 'advanced-database-cleaner' ) . ": " . ( ADBC_VERSION_TYPE === 'PREMIUM' ? ADBC_License_Manager::get_plan_name() : 'adbc_hidden' ),
 						__( 'License expiry/renewal', 'advanced-database-cleaner' ) . ": " . ( ADBC_VERSION_TYPE === 'PREMIUM' ? ADBC_License_Manager::get_license_expiration() : 'adbc_hidden' ),
+					)
+				),
+				'adbc_settings' => array(
+					'title' => __( 'Settings', 'advanced-database-cleaner' ),
+					'data' => array(
+						__( 'Cleanup method', 'advanced-database-cleaner' ) . ": " . $settings['sql_or_native_cleanup_method'],
+						__( 'Database rows batches', 'advanced-database-cleaner' ) . ": " . $settings['database_rows_batch'],
+						__( 'Reduce CPU usage', 'advanced-database-cleaner' ) . ": " . ( $settings['reduce_cpu_usage'] === '1' ? __( 'Yes', 'advanced-database-cleaner' ) : __( 'No', 'advanced-database-cleaner' ) ),
+						__( 'CPU work time', 'advanced-database-cleaner' ) . ": " . $settings['cpu_work_time_ms'],
+						__( 'CPU rest time', 'advanced-database-cleaner' ) . ": " . $settings['cpu_rest_time_ms'],
+						__( 'File line batches', 'advanced-database-cleaner' ) . ": " . $settings['file_lines_batch'],
+						__( 'File content chunks', 'advanced-database-cleaner' ) . ": " . $settings['file_content_chunks'],
+						__( 'Scan max execution time', 'advanced-database-cleaner' ) . ": " . $settings['scan_max_execution_time'],
+						__( 'Send corrections to server', 'advanced-database-cleaner' ) . ": " . ( $settings['send_corrections_to_server'] === '1' ? __( 'Yes', 'advanced-database-cleaner' ) : __( 'No', 'advanced-database-cleaner' ) ),
+						__( 'Analytics enabled', 'advanced-database-cleaner' ) . ": " . ( $settings['analytics_enabled'] === '1' ? __( 'Yes', 'advanced-database-cleaner' ) : __( 'No', 'advanced-database-cleaner' ) ),
+						__( 'Addons activity enabled', 'advanced-database-cleaner' ) . ": " . ( $settings['addons_activity_enabled'] === '1' ? __( 'Yes', 'advanced-database-cleaner' ) : __( 'No', 'advanced-database-cleaner' ) ),
+						__( 'Show tables with invalid prefix', 'advanced-database-cleaner' ) . ": " . ( $settings['show_tables_with_invalid_prefix'] === '1' ? __( 'Yes', 'advanced-database-cleaner' ) : __( 'No', 'advanced-database-cleaner' ) ),
+						__( 'Last successful analytics execution', 'advanced-database-cleaner' ) . ": " . ADBC_Common_Utils::format_timestamp_friendly( $settings['analytics_execution']['success'] ),
+						__( 'Last failed analytics execution', 'advanced-database-cleaner' ) . ": " . ADBC_Common_Utils::format_timestamp_friendly( $settings['analytics_execution']['fail'] ),
+						__( 'Last successful addons activity execution', 'advanced-database-cleaner' ) . ": " . ADBC_Common_Utils::format_timestamp_friendly( $settings['addons_activity_execution']['success'] ),
+						__( 'Last failed addons activity execution', 'advanced-database-cleaner' ) . ": " . ADBC_Common_Utils::format_timestamp_friendly( $settings['addons_activity_execution']['fail'] ),
 					)
 				),
 				'webserver' => array(

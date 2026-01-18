@@ -440,6 +440,32 @@ class ADBC_Common_Validator {
 	}
 
 	/**
+	 * Sanitize an array of items types sent by the user.
+	 * 
+	 * @param array $items_types The array of items types.
+	 * 
+	 * @return array The sanitized array of items types, empty array if all invalid.
+	 */
+	public static function sanitize_items_types( $items_types ) {
+
+		if ( ! is_array( $items_types ) ) {
+			return [];
+		}
+
+		$validated_items_types = [];
+
+		foreach ( $items_types as $item_type ) {
+			$sanitized = self::sanitize_items_type( $item_type );
+			if ( $sanitized !== '' ) {
+				$validated_items_types[] = $sanitized;
+			}
+		}
+
+		return $validated_items_types;
+
+	}
+
+	/**
 	 * Validate the manual categorization sent by the user.
 	 *
 	 * @param string $manual_categorization The manual categorization.

@@ -429,12 +429,12 @@ class ADBC_Admin_Init extends ADBC_Singleton {
 
 				$text = sprintf(
 					/* translators: 1: Plugin name with link */
-					__( 'You have been using %s for more than 1 week. Would you mind taking a few seconds to give it a 5-star rating on WordPress? Thank you in advance :)', 'advanced-database-cleaner' ),
+					esc_html__( 'You have been using %s for more than 1 week. Would you mind taking a few seconds to give it a 5-star rating on WordPress? Thank you in advance :)', 'advanced-database-cleaner' ),
 					'<a href="admin.php?page=advanced_db_cleaner">Advanced DB Cleaner</a>'
 				);
 
 				if ( is_multisite() )
-					$text = __( 'You have been using the "Advanced DB Cleaner" for more than 1 week. Would you mind taking a few seconds to give it a 5-star rating on WordPress? Thank you in advance :)', 'advanced-database-cleaner' );
+					$text = esc_html__( 'You have been using the "Advanced DB Cleaner" for more than 1 week. Would you mind taking a few seconds to give it a 5-star rating on WordPress? Thank you in advance :)', 'advanced-database-cleaner' );
 
 				printf(
 					'<div id="adbc-rating-notice" class="adbc-notice">
@@ -473,14 +473,14 @@ class ADBC_Admin_Init extends ADBC_Singleton {
 							</a>
 						</div>
 					</div>',
-					__( 'Awesome!', 'advanced-database-cleaner' ),
+					esc_html__( 'Awesome!', 'advanced-database-cleaner' ),
 					$text,
 					$rating_url,
-					__( 'Ok, you deserved it', 'advanced-database-cleaner' ),
-					__( 'I already did', 'advanced-database-cleaner' ),
-					__( 'No, not good enough', 'advanced-database-cleaner' ),
-					__( 'Remind me later', 'advanced-database-cleaner' ),
-					__( 'Dismiss', 'advanced-database-cleaner' )
+					esc_html__( 'Ok, you deserved it', 'advanced-database-cleaner' ),
+					esc_html__( 'I already did', 'advanced-database-cleaner' ),
+					esc_html__( 'No, not good enough', 'advanced-database-cleaner' ),
+					esc_html__( 'Remind me later', 'advanced-database-cleaner' ),
+					esc_html__( 'Dismiss', 'advanced-database-cleaner' )
 				);
 
 			} else {
@@ -609,7 +609,7 @@ class ADBC_Admin_Init extends ADBC_Singleton {
 	 */
 	public static function free_conflict_notice() {
 		echo '<div class="error"><p>';
-		_e( 'The free version of Advanced DB Cleaner has been de-activated since the premium version is active.', 'advanced-database-cleaner' );
+		esc_html_e( 'The free version of Advanced DB Cleaner has been de-activated since the premium version is active.', 'advanced-database-cleaner' );
 		echo "</p></div>";
 	}
 
@@ -620,7 +620,7 @@ class ADBC_Admin_Init extends ADBC_Singleton {
 	 */
 	public static function pro_conflict_notice() {
 		echo '<div class="error"><p>';
-		_e( 'The pro version of Advanced DB Cleaner has been de-activated since the newest premium version is active.', 'advanced-database-cleaner' );
+		esc_html_e( 'The pro version of Advanced DB Cleaner has been de-activated since the newest premium version is active.', 'advanced-database-cleaner' );
 		echo "</p></div>";
 	}
 
@@ -674,6 +674,15 @@ class ADBC_Admin_Init extends ADBC_Singleton {
 
 		return $this->original_plugin_meta_links;
 
+	}
+
+	/**
+	 * Load the plugin text domain for translations.
+	 * 
+	 * @return void
+	 */
+	public static function load_text_domain() {
+		load_plugin_textdomain( 'advanced-database-cleaner', false, ADBC_PLUGIN_DIR_NAME . '/languages/' );
 	}
 
 }

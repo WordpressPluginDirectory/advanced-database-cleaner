@@ -14,6 +14,11 @@ class ADBC_General_Cleanup_Endpoints {
 	/**
 	 * Retrieves general cleanup data based on the items type if provided, otherwise returns all general cleanup data.
 	 * 
+	 * Accepts:
+	 * - Empty array [] to get all items
+	 * - Array of item types ['revisions', 'auto_drafts'] to get only those items
+	 * - String item type 'revisions' to get a single item (for backward compatibility)
+	 * 
 	 * @param WP_REST_Request $request The request object containing the items type if specified.
 	 * 
 	 * @return WP_REST_Response The response containing the general cleanup data.
@@ -22,7 +27,26 @@ class ADBC_General_Cleanup_Endpoints {
 
 		try {
 
-			$items_type = ADBC_Common_Validator::sanitize_items_type( $request->get_param( 'itemsType' ) );
+			$items_type_param = $request->get_param( 'itemsType' );
+
+			// Handle empty array - return all items
+			if ( is_array( $items_type_param ) && empty( $items_type_param ) ) {
+				return ADBC_Rest::success( 'Success', ADBC_General_Cleanup::get_general_data() );
+			}
+
+			// Handle array of item types
+			if ( is_array( $items_type_param ) && ! empty( $items_type_param ) ) {
+				$validated_items_types = ADBC_Common_Validator::sanitize_items_types( $items_type_param );
+
+				if ( empty( $validated_items_types ) ) {
+					return ADBC_Rest::error( 'invalid items types.', ADBC_Rest::BAD_REQUEST );
+				}
+
+				return ADBC_Rest::success( 'Success', ADBC_General_Cleanup::get_general_data( $validated_items_types ) );
+			}
+
+			// Handle string item type (backward compatibility and refresh after purge)
+			$items_type = ADBC_Common_Validator::sanitize_items_type( $items_type_param );
 
 			if ( $items_type === '' ) {
 				return ADBC_Rest::success( 'Success', ADBC_General_Cleanup::get_general_data() );

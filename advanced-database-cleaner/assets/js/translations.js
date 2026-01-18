@@ -660,6 +660,7 @@ const translations = [
   __("in total", "advanced-database-cleaner"),
   __("No items are kept with this configuration.", "advanced-database-cleaner"),
   __("Apply this to all other items (if applicable)", "advanced-database-cleaner"),
+  __("Saving...", "advanced-database-cleaner"),
   __("Save", "advanced-database-cleaner"),
   __("The retention by items is available in the premium version.", "advanced-database-cleaner"),
   __("System info", "advanced-database-cleaner"),
@@ -909,11 +910,12 @@ const translations = [
     "advanced-database-cleaner"
   ),
   sprintf(
-    /* translators: %s: autoload size */
+    /* translators: %1$s: autoload size, %2$s: autoload limit */
     __(
-      "Your autoload size (%s) exceeds the WordPress recommendation (800KB). Reducing it may improve performance.",
+      "Your autoload size (%1$s) exceeds your WordPress recommendation (%2$s). Reducing it may improve performance.",
       "advanced-database-cleaner"
     ),
+    variable,
     variable
   ),
   __(
@@ -1097,7 +1099,6 @@ const translations = [
     "Specifies the number of rows to process in each batch when reading database tables. Reducing this value can help optimize performance and memory usage when dealing with large tables.",
     "advanced-database-cleaner"
   ),
-  __("Saving...", "advanced-database-cleaner"),
   __("Save settings", "advanced-database-cleaner"),
   __("Today's usage", "advanced-database-cleaner"),
   __("Credits used today:", "advanced-database-cleaner"),

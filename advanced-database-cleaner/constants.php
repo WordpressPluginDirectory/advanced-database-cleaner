@@ -30,17 +30,17 @@ if ( ! defined( 'ADBC_SECURITY_CODE_LENGTH' ) )
 
 // ADBC uploads folder path.
 if ( ! defined( "ADBC_UPLOADS_DIR_PATH" ) ) {
-	$security_code = ADBC_Settings::instance()->get_setting( 'security_code' );
-	define( "ADBC_UPLOADS_DIR_PATH", ADBC_WP_UPLOADS_DIR_PATH . '/' . ADBC_UPLOADS_DIR_PREFIX . $security_code );
+	$adbc_security_code = ADBC_Settings::instance()->get_setting( 'security_code' );
+	define( "ADBC_UPLOADS_DIR_PATH", ADBC_WP_UPLOADS_DIR_PATH . '/' . ADBC_UPLOADS_DIR_PREFIX . $adbc_security_code );
 }
 
 // WordPress debug file path.
 if ( ! defined( 'ADBC_WP_DEBUG_LOG_FILE_PATH' ) ) {
-	$debug_log_path = WP_CONTENT_DIR . '/debug.log';
+	$adbc_debug_log_path = WP_CONTENT_DIR . '/debug.log';
 	if ( defined( 'WP_DEBUG_LOG' ) && is_string( WP_DEBUG_LOG ) ) {
-		$debug_log_path = WP_DEBUG_LOG;
+		$adbc_debug_log_path = WP_DEBUG_LOG;
 	}
-	define( 'ADBC_WP_DEBUG_LOG_FILE_PATH', $debug_log_path );
+	define( 'ADBC_WP_DEBUG_LOG_FILE_PATH', $adbc_debug_log_path );
 }
 
 // Plugin URL. Used to enqueue scripts and styles.
@@ -48,8 +48,8 @@ if ( ! defined( 'ADBC_PLUGIN_ABSOLUTE_URL' ) )
 	define( 'ADBC_PLUGIN_ABSOLUTE_URL', plugins_url( '', __FILE__ ) );
 
 // Current website URL.
-if ( ! defined( 'ADBC_WEBSITE' ) )
-	define( 'ADBC_WEBSITE', get_site_url() );
+if ( ! defined( 'ADBC_WEBSITE_HOME_URL' ) )
+	define( 'ADBC_WEBSITE_HOME_URL', home_url() );
 
 // Rest API routes.
 if ( ! defined( 'ADBC_REST_API_NAMESPACE' ) )

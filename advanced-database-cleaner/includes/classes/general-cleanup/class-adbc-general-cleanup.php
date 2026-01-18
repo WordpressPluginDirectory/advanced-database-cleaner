@@ -12,9 +12,12 @@ if ( ! defined( 'ABSPATH' ) )
 class ADBC_General_Cleanup {
 
 	/**
-	 * Get the general data for all items types or a specific type.
+	 * Get the general data for all items types, a specific type, or an array of types.
 	 *
-	 * @param string|null $items_type The type of items to get data for, or null for all types.
+	 * @param string|array|null $items_type The type(s) of items to get data for:
+	 *                                      - Empty string or null for all types
+	 *                                      - String for a single type
+	 *                                      - Array of strings for multiple types
 	 * 
 	 * @return array An array containing the items data, total size, and total count.
 	 */
@@ -27,9 +30,22 @@ class ADBC_General_Cleanup {
 		$total_count = 0;
 
 		// Determine which handlers to process.
-		$types_to_process = $items_type === ''
-			? ADBC_Cleanup_Type_Registry::all_handlers()
-			: [ $items_type => ADBC_Cleanup_Type_Registry::handler( $items_type ) ];
+		if ( $items_type === '' || $items_type === null ) {
+			// Get all handlers
+			$types_to_process = ADBC_Cleanup_Type_Registry::all_handlers();
+		} elseif ( is_array( $items_type ) ) {
+			// Get handlers for the specified array of types
+			$types_to_process = [];
+			foreach ( $items_type as $type ) {
+				$handler = ADBC_Cleanup_Type_Registry::handler( $type );
+				if ( $handler ) {
+					$types_to_process[ $type ] = $handler;
+				}
+			}
+		} else {
+			// Single type (string) - backward compatibility
+			$types_to_process = [ $items_type => ADBC_Cleanup_Type_Registry::handler( $items_type ) ];
+		}
 
 		foreach ( $types_to_process as $type => $handler ) {
 

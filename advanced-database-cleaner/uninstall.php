@@ -80,10 +80,10 @@ class ADBC_Uninstall {
 				self::delete_folder( $automation_folder );
 
 				if ( file_exists( $addons_activity_file ) )
-					unlink( $addons_activity_file );
+					wp_delete_file( $addons_activity_file );
 
 				if ( file_exists( $addons_activity_dictionary_file ) )
-					unlink( $addons_activity_dictionary_file );
+					wp_delete_file( $addons_activity_dictionary_file );
 
 				// Unschedule crons
 				wp_unschedule_hook( 'adbc_cron_analytics' );
@@ -132,7 +132,7 @@ class ADBC_Uninstall {
 			if ( is_dir( $path ) ) {
 				self::delete_folder( $path ); // recursion for subfolders
 			} else {
-				unlink( $path ); // delete file
+				wp_delete_file( $path ); // delete file
 			}
 		}
 

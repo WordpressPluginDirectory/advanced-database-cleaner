@@ -12,7 +12,6 @@ if ( ! defined( 'ABSPATH' ) )
 class ADBC_Options {
 
 	private const BIG_OPTION_THRESHOLD_WARNING = 150 * 1024; // 150 KB. (If you change this value, change it as well in js filter message and slice)
-	private const AUTOLOAD_THRESHOLD_WARNING = 800 * 1000; // WordPress uses 800 000 bytes (≈800 KB)
 	private const TRUNCATE_LENGTH = 20; // Length to truncate the option value for display
 
 	/**
@@ -411,14 +410,14 @@ class ADBC_Options {
 	/**
 	 * Count the size of all autoloaded options in the wp_options table.
 	 * 
-	 * @return array [ 'autoloaded_size' => string, 'autoload_health' => string (good/bad) ]
+	 * @return array Array with autoloaded size and health status.
 	 */
 	public static function count_autoload_size_using_sql() {
 
 		global $wpdb;
 		$autoload_values = self::get_values_to_autoload();
 
-		// Build “%s,%s,%s” for $wpdb->prepare()
+		// Build "%s,%s,%s" for $wpdb->prepare()
 		$in_placeholders = implode( ',', array_fill( 0, count( $autoload_values ), '%s' ) );
 
 		$sql = $wpdb->prepare(
@@ -437,12 +436,37 @@ class ADBC_Options {
 		);
 
 		$autoloaded_size = (int) $wpdb->get_var( $sql );
-		$autoload_health = $autoloaded_size > self::AUTOLOAD_THRESHOLD_WARNING ? 'bad' : 'good';
+		$autoload_limit_in_bytes = self::get_autoload_warning_limit();
+		$autoload_health = $autoloaded_size > $autoload_limit_in_bytes ? 'bad' : 'good';
 
 		return [ 
 			'autoloaded_size' => ADBC_Common_Utils::format_bytes( $autoloaded_size ),
 			'autoload_health' => $autoload_health,
+			'autoload_limit' => ADBC_Common_Utils::format_bytes( $autoload_limit_in_bytes ),
 		];
+	}
+
+	/**
+	 * Get the autoload warning limit from WordPress filter or default value. 
+	 * This warning limit is used to determine if the autoloaded options size is healthy or not.
+	 * 
+	 * @return int Autoload warning limit in bytes.
+	 */
+	public static function get_autoload_warning_limit() {
+
+		// Get the autoload limit from WordPress filter (allows customization via site_status_autoloaded_options_size_limit)
+		// This filter was introduced in WordPress 6.6.0, so we check version for backward compatibility
+		$default_limit = 800000; // 800 KB - WordPress default recommendation
+		global $wp_version;
+		if ( version_compare( $wp_version, '6.6.0', '>=' ) ) {
+			// WordPress 6.6.0+ - use the filter (allows customization)
+			$autoload_limit_bytes = apply_filters( 'site_status_autoloaded_options_size_limit', $default_limit );
+		} else {
+			// WordPress < 6.6.0 - use default limit (filter doesn't exist yet)
+			$autoload_limit_bytes = $default_limit;
+		}
+
+		return $autoload_limit_bytes;
 	}
 
 	/**

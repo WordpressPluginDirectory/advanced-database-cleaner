@@ -953,6 +953,7 @@ class ADBC_Hardcoded_Items extends ADBC_Singleton {
 	protected function __construct() {
 		parent::__construct();
 		$this->add_special_wordpress_options();
+		$this->add_special_wordpress_usermeta();
 	}
 
 	/**
@@ -962,16 +963,10 @@ class ADBC_Hardcoded_Items extends ADBC_Singleton {
 	 */
 	private function add_special_wordpress_options() {
 
-		global $wpdb;
-
 		// The 'user_roles' option is added as $prefix.'user_roles'
-		if ( is_multisite() ) {
-			$sites = ADBC_Sites::instance()->get_sites_list();
-			foreach ( $sites as $site ) {
-				$this->wp_options[ $site['prefix'] . 'user_roles' ] = '';
-			}
-		} else {
-			$this->wp_options[ $wpdb->prefix . 'user_roles' ] = '';
+		$sites = ADBC_Sites::instance()->get_sites_list();
+		foreach ( $sites as $site ) {
+			$this->wp_options[ $site['prefix'] . 'user_roles' ] = '';
 		}
 
 		// Add also theme_mods option
@@ -980,6 +975,25 @@ class ADBC_Hardcoded_Items extends ADBC_Singleton {
 		$this->wp_options[ 'theme_mods_' . $child_theme_slug ] = '';
 		if ( $child_theme_slug != $parent_theme_slug ) {
 			$this->wp_options[ 'theme_mods_' . $parent_theme_slug ] = '';
+		}
+
+	}
+
+	/**
+	 * Add special WordPress usermeta to the hardcoded usermeta list.
+	 * 
+	 * @return void
+	 */
+	private function add_special_wordpress_usermeta() {
+
+		// Add correct prefixed capabilities and user_level usermeta
+		$sites = ADBC_Sites::instance()->get_sites_list();
+		foreach ( $sites as $site ) {
+			$this->wp_users_meta[ $site['prefix'] . 'capabilities' ] = '';
+			$this->wp_users_meta[ $site['prefix'] . 'user_level' ] = '';
+			$this->wp_users_meta[ $site['prefix'] . 'user-settings' ] = '';
+			$this->wp_users_meta[ $site['prefix'] . 'user-settings-time' ] = '';
+			$this->wp_users_meta[ $site['prefix'] . 'dashboard_quick_press_last_post_id' ] = '';
 		}
 
 	}

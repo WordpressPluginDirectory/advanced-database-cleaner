@@ -163,6 +163,43 @@ class ADBC_Common_Utils {
 	}
 
 	/**
+	 * Format a timestamp to a friendly, localized format.
+	 *
+	 * @param int|string|null $timestamp The timestamp to format.
+	 *
+	 * @return string The formatted date string, or empty string if timestamp is invalid.
+	 */
+	public static function format_timestamp_friendly( $timestamp ) {
+
+		// Handle empty or invalid timestamps.
+		if ( empty( $timestamp ) || ! is_numeric( $timestamp ) ) {
+			return '';
+		}
+
+		$timestamp = (int) $timestamp;
+
+		// Validate timestamp range (reasonable Unix timestamp range).
+		if ( $timestamp < 0 || $timestamp > 2147483647 ) {
+			return '';
+		}
+
+		// Translators can adjust the display format.
+		// Example output: "December 10, 2025 3:45 PM".
+		$friendly_format = _x(
+			'F j, Y g:i A',
+			'Friendly date and time format (e.g. December 10, 2025 3:45 PM)',
+			'advanced-database-cleaner'
+		);
+
+		if ( function_exists( 'wp_date' ) ) {
+			return wp_date( $friendly_format, $timestamp );
+		}
+
+		// Fallback for very old WordPress versions.
+		return date_i18n( $friendly_format, $timestamp );
+	}
+
+	/**
 	 * Detect the type of a value.
 	 *
 	 * @param mixed $value The value to detect.

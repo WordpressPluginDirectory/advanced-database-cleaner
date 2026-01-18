@@ -5,7 +5,7 @@ Tags: clean, database, optimize, performance, postmeta
 Requires at least: 5.0.0
 Requires PHP: 7.0
 Tested up to: 6.9
-Stable tag: 4.0.4
+Stable tag: 4.0.5
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -249,6 +249,21 @@ This section describes how to install the plugin. In general, there are 3 ways t
 21. Settings page
 
 == Changelog ==
+
+= 4.0.5 – 17/01/2026 =
+- Fix: The plugin left menu was unstable in some environments.
+- Fix: Some filters did not correctly reflect the displayed data.
+- Fix: Certain strings were not translated in Multisite REST responses.
+- Fix: Some special usermeta entries in Multisite and custom table prefix setups were not correctly assigned to WordPress core.
+- Tweak: Improved the General Cleanup page to reduce the number of REST requests for better performance.
+- Tweak: Take into account the site_status_autoloaded_options_size_limit filter when displaying the autoload size warning.
+- Tweak: Added bulk actions to the bottom of tables as well.
+- Tweak: Added the ability to select multiple items using the Shift key.
+- Tweak: Optimized loading of scan results from files for improved performance.
+- Tweak: Optimized the calculation of non-scanned items for better performance.
+- Tweak: Added plugin settings to the System Info page.
+- Tweak: Unified the structure of installed add-ons data sent during Remote Scan.
+- Tweak: Various improvements to code quality, security, and styling.
 
 = 4.0.4 – 25/12/2025 =
 - Fix: [Premium] Prevented license activation from being unintentionally removed after one week.
